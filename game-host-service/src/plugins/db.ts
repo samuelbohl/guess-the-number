@@ -1,5 +1,5 @@
 import fp from 'fastify-plugin'
-import { Pool } from 'pg'
+import { Pool } from '../../node_modules/@types/pg/index.js'
 import { drizzle } from 'drizzle-orm/node-postgres'
 
 
