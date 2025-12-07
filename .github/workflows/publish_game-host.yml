@@ -4,7 +4,7 @@ on:
   push:
     branches: ["dev"]
     paths:
-      - "game-host-service/**"
+      - "game-host/**"
       - ".github/workflows/publish_game-host.yml"
     tags:
       - "v*"
@@ -46,8 +46,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./game-host-service
-          file: ./game-host-service/Dockerfile
+          context: ./game-host
+          file: ./game-host/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
