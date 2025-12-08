@@ -56,11 +56,7 @@ export async function submitGuessAction(
 
   const client = new GameHostClient(token);
   const res = await client.makeGuess(gameId, value);
-
-  // Map host result to player feedback enum
-  const feedback: "higher" | "lower" | "correct" =
-    res.result === "low" ? "higher" : res.result === "high" ? "lower" : "correct";
-
+  
   const db = getDb();
   const rows = await db
     .select({ id: playerGames.id, rangeMin: playerGames.rangeMin, rangeMax: playerGames.rangeMax })
@@ -73,15 +69,18 @@ export async function submitGuessAction(
     throw new Error("Player game not found.");
   }
 
-  await db.insert(playerGuesses).values({ gameId: playerGameId, value, feedback });
+  await db.insert(playerGuesses).values({ gameId: playerGameId, value, feedback: res.result });
 
   let rangeMin = rows[0]?.rangeMin ?? 1;
   let rangeMax = rows[0]?.rangeMax ?? 10000;
 
-  if (feedback === "higher") {
+  if (res.result === "low") {
     rangeMin = Math.max(rangeMin, value + 1);
-  } else if (feedback === "lower") {
+  } else if (res.result === "high") {
     rangeMax = Math.min(rangeMax, value - 1);
+  } else if (res.result === "correct") {
+    rangeMin = value;
+    rangeMax = value;
   }
 
   await db

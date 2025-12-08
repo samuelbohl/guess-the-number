@@ -34,8 +34,8 @@ export function GuessHistory({ history }: Props) {
                     </span>
                     <span className="font-mono text-lg font-semibold">{item.guess}</span>
                   </div>
-                  {item.feedback === "higher" && <TrendingUp className="h-5 w-5 text-accent" />}
-                  {item.feedback === "lower" && <TrendingDown className="h-5 w-5 text-destructive" />}
+                  {item.feedback === "low" && <TrendingUp className="h-5 w-5 text-accent" />}
+                  {item.feedback === "high" && <TrendingDown className="h-5 w-5 text-destructive" />}
                   {item.feedback === "correct" && <Trophy className="h-5 w-5 text-success" />}
                 </div>
               ))}

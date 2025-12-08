@@ -4,7 +4,7 @@ import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
 export const playerGameModeEnum = pgEnum('player_game_mode', ['manual', 'bot'])
 export const playerGameStatusEnum = pgEnum('player_game_status', ['active', 'completed'])
-export const playerGuessFeedbackEnum = pgEnum('player_guess_feedback', ['higher', 'lower', 'correct'])
+export const playerGuessFeedbackEnum = pgEnum('player_guess_feedback', ['low', 'high', 'correct'])
 
 export const playerGames = pgTable(
   'player_games',
@@ -33,7 +33,7 @@ export const playerGuesses = pgTable(
       onUpdate: 'no action',
     }),
     value: integer('value').notNull(),
-    feedback: playerGuessFeedbackEnum('feedback').notNull(), // higher | lower | correct
+    feedback: playerGuessFeedbackEnum('feedback').notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   }
 )

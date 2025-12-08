@@ -43,10 +43,10 @@ export function useGuessGame(initialGameId?: string) {
       newFeedback = "correct";
       setGameState("won");
     } else if (res.result === "low") {
-      newFeedback = "higher";
+      newFeedback = "low";
       setRange((prev) => ({ ...prev, min: Math.max(prev.min, guessNumber + 1) }));
     } else if (res.result === "high") {
-      newFeedback = "lower";
+      newFeedback = "high";
       setRange((prev) => ({ ...prev, max: Math.min(prev.max, guessNumber - 1) }));
     }
 
