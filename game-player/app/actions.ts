@@ -12,5 +12,6 @@ export async function startNewGameAction(_formData: FormData) {
   }
   const client = new GameHostClient(token);
   const created = await client.createGame();
+  console.log(created);
   redirect(`/manual/${created.id}`);
 }
