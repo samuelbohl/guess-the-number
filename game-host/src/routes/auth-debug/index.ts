@@ -78,7 +78,7 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
     }
 
     return {
-      headers,
+      headers: request.headers,
       verification,
       userFromPlugin: request.user ?? null,
     }
