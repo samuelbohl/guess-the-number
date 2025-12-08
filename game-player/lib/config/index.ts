@@ -16,8 +16,8 @@ export type Config = z.infer<typeof configSchema>;
 
 function loadConfig(): Config {
   try {
-    if (process.env.CI) {
-      // skip validation in CI
+    const skip = !!process.env.CI || process.env.SKIP_CONFIG_VALIDATION === '1';
+    if (skip) {
       return {} as Config;
     }
 
