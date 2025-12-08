@@ -40,21 +40,6 @@ export async function verifyAzureJwt(token: string, opts: VerifyOptions): Promis
   return { payload, header: protectedHeader }
 }
 
-// Helper: extract tenantId from the token's iss claim
-function extractTenantIdFromIss(iss: string | undefined): string | undefined {
-  if (!iss) return undefined
-  try {
-    const u = new URL(iss)
-    // Typical path: /{tenantId}/v2.0
-    const parts = u.pathname.split('/').filter(Boolean)
-    if (parts.length >= 1) {
-      return parts[0]
-    }
-  } catch {
-    // ignore
-  }
-  return undefined
-}
 
 function decodePayload(token: string): JWTPayload | undefined {
   try {
@@ -80,6 +65,38 @@ export async function verifyJwtSignatureOnly(token: string): Promise<{ payload: 
   // Do not pass issuer/audience -> signature-only (with default exp/nbf checks)
   const { payload: verifiedPayload, protectedHeader } = await jwtVerify(token, jwks, {})
   return { payload: verifiedPayload, header: protectedHeader }
+}
+
+// Safer: verify with tenant from env and restrict JWKS to CIAM/AAD hosts
+export async function verifyJwtSignatureWithTenantEnv(token: string): Promise<{ payload: JWTPayload; header: JWTHeaderParameters; }>{
+  const tenantId = process.env.AZURE_TENANT_ID
+  if (!tenantId) throw new Error('AZURE_TENANT_ID env var is not set')
+
+  const payload = decodePayload(token)
+  if (!payload?.tid) throw new Error('Token missing tenant id (tid) claim')
+  if (payload.tid !== tenantId) throw new Error('Unexpected tenant id in token')
+
+  // Prepare JWKS for CIAM and AAD using the tenantId (no reliance on token iss)
+  const ciamJwksUrl = new URL(`https://${tenantId}.ciamlogin.com/${tenantId}/discovery/v2.0/keys`)
+  const aadJwksUrl = new URL(`https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`)
+
+  const ciamKey = ciamJwksUrl.toString()
+  const aadKey = aadJwksUrl.toString()
+
+  if (!jwksCache[ciamKey]) jwksCache[ciamKey] = createRemoteJWKSet(ciamJwksUrl)
+  if (!jwksCache[aadKey]) jwksCache[aadKey] = createRemoteJWKSet(aadJwksUrl)
+
+  const ciamJwks = jwksCache[ciamKey]
+  const aadJwks = jwksCache[aadKey]
+
+  // Try CIAM then AAD JWKS (signature-only with exp/nbf checks)
+  try {
+    const { payload: verifiedPayload, protectedHeader } = await jwtVerify(token, ciamJwks, {})
+    return { payload: verifiedPayload, header: protectedHeader }
+  } catch {
+    const { payload: verifiedPayload, protectedHeader } = await jwtVerify(token, aadJwks, {})
+    return { payload: verifiedPayload, header: protectedHeader }
+  }
 }
 
 export function computeTokenTimings(nowEpochSec: number, payload: JWTPayload) {
