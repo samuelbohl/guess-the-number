@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { GameService, NotFoundError, ForbiddenError, BadRequestError } from '../../modules/games/service.js'
+import { GameService } from '../../modules/games/service.js'
 
 const gamesRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
   const service = new GameService(fastify.db as any)
@@ -23,14 +23,9 @@ const gamesRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
       },
     },
   }, async (request, reply) => {
-    try {
-      const body = await service.createGameForPlayer(request.user!)
-      reply.code(201)
-      return body
-    } catch (err) {
-      fastify.log.error(err)
-      return reply.internalServerError('Unexpected error')
-    }
+    const body = await service.createGameForPlayer(request.user!)
+    reply.code(201)
+    return body
   })
 
   // GET /games/:id - get current game status
@@ -57,17 +52,9 @@ const gamesRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
         },
       },
     },
-  }, async (request, reply) => {
+  }, async (request) => {
     const id = String((request.params as any).id)
-    try {
-      const body = await service.getGameForPlayer(request.user!, id)
-      return body
-    } catch (err) {
-      if (err instanceof NotFoundError) return reply.notFound(err.message)
-      if (err instanceof ForbiddenError) return reply.forbidden(err.message)
-      fastify.log.error(err)
-      return reply.internalServerError('Unexpected error')
-    }
+    return service.getGameForPlayer(request.user!, id)
   })
 
   // POST /games/:id/guess - submit a guess
@@ -98,19 +85,10 @@ const gamesRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
         },
       },
     },
-  }, async (request, reply) => {
+  }, async (request) => {
     const id = String((request.params as any).id)
     const value = Number((request.body as any).value)
-    try {
-      const body = await service.submitGuess(request.user!, id, value)
-      return body
-    } catch (err) {
-      if (err instanceof NotFoundError) return reply.notFound(err.message)
-      if (err instanceof ForbiddenError) return reply.forbidden(err.message)
-      if (err instanceof BadRequestError) return reply.badRequest(err.message)
-      fastify.log.error(err)
-      return reply.internalServerError('Unexpected error')
-    }
+    return service.submitGuess(request.user!, id, value)
   })
 }
 

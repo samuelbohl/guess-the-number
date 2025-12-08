@@ -18,7 +18,13 @@ const app: FastifyPluginAsync<AppOptions> = async (
   fastify,
   opts
 ): Promise<void> => {
-  // Place here your custom code!
+  try {
+    const { validateEnv } = await import('./lib/env.js')
+    validateEnv()
+  } catch (err) {
+    fastify.log.error({ err }, 'Environment validation failed')
+    throw err
+  }
 
   // Do not touch the following lines
 

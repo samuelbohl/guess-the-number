@@ -2,9 +2,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '../../db/schema.js'
 import { PlayersRepository, GamesRepository, GuessesRepository } from './repositories.js'
 
-export class NotFoundError extends Error {}
-export class ForbiddenError extends Error {}
-export class BadRequestError extends Error {}
+import { NotFoundError, ForbiddenError, BadRequestError } from '../common/errors.js'
 
 export type AuthUser = {
   externalId: string
