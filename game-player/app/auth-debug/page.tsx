@@ -56,9 +56,7 @@ export default async function AuthDebugPage() {
                   {item.key}
                 </td>
                 <td style={{ padding: '8px', border: '1px solid #ccc', wordBreak: 'break-all' }}>
-                  {item.value.length > 100 
-                    ? `${item.value.substring(0, 100)}... (truncated)` 
-                    : item.value}
+                  {item.value}
                 </td>
               </tr>
             ))}
