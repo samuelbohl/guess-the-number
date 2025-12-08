@@ -1,6 +1,8 @@
 import { headers } from 'next/headers';
 import { GameHostClient } from '@/lib/clients/game-host-client';
 import { GuessBot, Strategies } from '@/lib/bot';
+import { redirect } from 'next/navigation';
+import { isActiveToken } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +11,10 @@ export default async function BotTestPage() {
   const token = h.get('x-ms-token-aad-id-token');
   if (!token) {
     throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+  }
+  if (!isActiveToken(token)) {
+    const loginUrl = `/.auth/login/aad?post_login_redirect_uri=${encodeURIComponent(`/bot-test`)}`;
+    redirect(loginUrl);
   }
 
   const client = new GameHostClient(token);
