@@ -43,8 +43,8 @@ declare module 'fastify' {
   interface FastifyRequest {
     user?: {
       externalId: string
-      idp?: string
-      email?: string
+      idp: string
+      email: string
     }
   }
 }
