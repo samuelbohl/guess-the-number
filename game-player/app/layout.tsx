@@ -17,15 +17,12 @@ export const metadata: Metadata = {
   description: "A fun number guessing game powered by REST APIs",
 };
 
-import { ensureMigrationsApplied } from "@/lib/db/startup";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Ensure DB migrations are applied once on startup (no-op until migrations exist)
-  await ensureMigrationsApplied();
 
   return (
     <html lang="en">
