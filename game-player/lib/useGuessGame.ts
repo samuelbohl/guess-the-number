@@ -5,7 +5,14 @@ import { useState, useEffect } from "react";
 import type { GameState, FeedbackType, Range, GuessHistoryItem } from "@/lib/types/game";
 import { startNewGameAction, submitGuessAction } from "@/lib/actions/game";
 
-export function useGuessGame(initialGameId?: string) {
+type InitialState = {
+  attempts?: number;
+  range?: Range;
+  history?: GuessHistoryItem[];
+  status?: "active" | "completed";
+};
+
+export function useGuessGame(initialGameId?: string, initial?: InitialState) {
   const [gameState, setGameState] = useState<GameState>("idle");
   const [gameId, setGameId] = useState<string | null>(null);
   const [guess, setGuess] = useState("");
@@ -17,14 +24,21 @@ export function useGuessGame(initialGameId?: string) {
   useEffect(() => {
     if (initialGameId && gameState === "idle") {
       setGameId(initialGameId);
-      setGameState("playing");
-      setAttempts(0);
-      setHistory([]);
-      setFeedback("none");
-      setRange({ min: 1, max: 10000 });
+
+      const loadedAttempts = initial?.attempts ?? 0;
+      const loadedHistory = initial?.history ?? [];
+      const loadedRange = initial?.range ?? { min: 1, max: 10000 };
+      const lastFeedback: FeedbackType = loadedHistory.length > 0 ? loadedHistory[loadedHistory.length - 1].feedback : "none";
+      const completed = initial?.status === "completed" || lastFeedback === "correct";
+
+      setAttempts(loadedAttempts);
+      setHistory(loadedHistory);
+      setFeedback(lastFeedback);
+      setRange(loadedRange);
       setGuess("");
+      setGameState(completed ? "won" : "playing");
     }
-  }, [initialGameId, gameState]);
+  }, [initialGameId, gameState, initial]);
 
   const startNewGame = async () => {
     await startNewGameAction();

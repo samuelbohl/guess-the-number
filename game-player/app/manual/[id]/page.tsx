@@ -1,22 +1,62 @@
 import { headers } from "next/headers";
-import { GameHostClient } from "@/lib/clients/game-host-client";
 import GuessTheNumberGame from "@/components/guess-the-number-game";
+import { getDb } from "@/lib/db/client";
+import { playerGames, playerGuesses } from "@/lib/db/schema";
+import { and, eq, asc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManualGamePage({ params }: { params: { id: string } }) {
-  const h = await headers();
-  const token = h.get("x-ms-token-aad-id-token");
+  const headerList = await headers();
+  const token = headerList.get("x-ms-token-aad-id-token");
   if (!token) {
     throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
   }
-  const client = new GameHostClient(token);
+
+  const principalId = headerList.get("x-ms-client-principal-id");
+  if (!principalId) {
+    throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
+  }
+
   const { id } = await params;
-  await client.getGame(id);
+  const db = getDb();
+  const gameRow = await db
+    .select({
+      id: playerGames.id,
+      attempts: playerGames.attempts,
+      rangeMin: playerGames.rangeMin,
+      rangeMax: playerGames.rangeMax,
+      status: playerGames.status,
+    })
+    .from(playerGames)
+    .where(and(eq(playerGames.hostGameId, id), eq(playerGames.playerId, principalId)))
+    .limit(1);
+
+  if (gameRow.length === 0) {
+    throw new Error("Game not found.");
+  }
+
+  const playerGame = gameRow[0] ?? null;
+  const initialAttempts = playerGame.attempts;
+  const initialRange = { min: playerGame.rangeMin, max: playerGame.rangeMax };
+  const initialStatus = playerGame.status as "active" | "completed";
+  const guesses = await db
+    .select({ value: playerGuesses.value, feedback: playerGuesses.feedback })
+    .from(playerGuesses)
+    .where(eq(playerGuesses.gameId, playerGame.id))
+    .orderBy(asc(playerGuesses.id));
+
+  const initialHistory = guesses.map((g) => ({ guess: g.value, feedback: g.feedback }));
 
   return (
     <main className="min-h-screen bg-background">
-      <GuessTheNumberGame initialGameId={id} />
+      <GuessTheNumberGame
+        initialGameId={id}
+        initialAttempts={initialAttempts}
+        initialRange={initialRange}
+        initialHistory={initialHistory}
+        initialStatus={initialStatus}
+      />
     </main>
   );
 }

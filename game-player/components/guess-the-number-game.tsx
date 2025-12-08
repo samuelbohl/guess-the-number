@@ -13,12 +13,17 @@ import { RangeIndicator } from "@/components/game/RangeIndicator"
 import { GuessHistory } from "@/components/game/GuessHistory"
 import { GameWon } from "@/components/game/GameWon"
 import { startNewGameAction } from "@/lib/actions/game"
+import type { Range, GuessHistoryItem } from "@/lib/types/game"
 
 type Props = {
   initialGameId?: string
+  initialAttempts?: number
+  initialRange?: Range
+  initialHistory?: GuessHistoryItem[]
+  initialStatus?: "active" | "completed"
 }
 
-export default function GuessTheNumberGame({ initialGameId }: Props) {
+export default function GuessTheNumberGame({ initialGameId, initialAttempts, initialRange, initialHistory, initialStatus }: Props) {
   const {
     gameState,
     gameId,
@@ -31,7 +36,12 @@ export default function GuessTheNumberGame({ initialGameId }: Props) {
     startNewGame,
     submitGuess,
     handleKeyPress,
-  } = useGuessGame(initialGameId)
+  } = useGuessGame(initialGameId, {
+    attempts: initialAttempts,
+    range: initialRange,
+    history: initialHistory,
+    status: initialStatus,
+  })
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16">
