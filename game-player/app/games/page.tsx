@@ -84,9 +84,9 @@ export default async function GamesPage() {
                                 <Button size="sm">Open</Button>
                               </Link>
                             ) : (
-                              <Button size="sm" variant="outline" disabled>
-                                N/A
-                              </Button>
+                              <Link href={`/bot/${g.hostGameId}`}>
+                                <Button size="sm" variant="secondary">Open</Button>
+                              </Link>
                             )}
                           </td>
                         </tr>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,24 @@ const ALGORITHM_OPTIONS: { value: BotAlgorithmKey; label: string; description: s
 
 type GameState = "idle" | "playing" | "paused" | "won" | "aborted";
 
-export default function BotGameServer() {
+type Props = {
+  initialGameId?: string;
+  initialAttempts?: number;
+  initialRange?: Range;
+  initialHistory?: { guess: number; feedback: FeedbackType }[];
+  initialStatus?: "active" | "completed";
+  initialAlgorithm?: BotAlgorithmKey;
+};
+
+export default function BotGameServer({
+  initialGameId,
+  initialAttempts,
+  initialRange,
+  initialHistory,
+  initialStatus,
+  initialAlgorithm,
+}: Props) {
+  const router = useRouter();
   const [gameState, setGameState] = useState<GameState>("idle");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<BotAlgorithmKey | null>(null);
   const [attempts, setAttempts] = useState(0);
@@ -46,6 +64,27 @@ export default function BotGameServer() {
     [selectedAlgorithm]
   );
 
+  // Hydrate from server-provided initial state (bot/[id] route)
+  useEffect(() => {
+    if (initialGameId && gameState === "idle") {
+      if (initialAlgorithm) {
+        setSelectedAlgorithm(initialAlgorithm);
+      }
+      const loadedAttempts = initialAttempts ?? 0;
+      const loadedHistory = initialHistory ?? [];
+      const loadedRange = initialRange ?? { min: 1, max: 10000 };
+      const last = loadedHistory.length > 0 ? loadedHistory[loadedHistory.length - 1] : null;
+      const lastFeedback: FeedbackType | null = last ? last.feedback : null;
+      const completed = (initialStatus === "completed") || lastFeedback === "correct";
+
+      setAttempts(loadedAttempts);
+      setHistory(loadedHistory);
+      setCurrentFeedback(lastFeedback);
+      setRange(loadedRange);
+
+      setGameState(completed ? "won" : "aborted");
+    }
+  }, [initialGameId, initialAttempts, initialRange, initialHistory, initialStatus, initialAlgorithm, gameState]);
 
   const startNewGame = async () => {
     if (!selectedAlgorithm) return;
@@ -56,38 +95,9 @@ export default function BotGameServer() {
     setRange({ min: 1, max: 10000 });
     setCurrentFeedback(null);
 
-    // create host game and play using selected strategy
     const res = await startAndPlayBotGameAction(selectedAlgorithm);
-    setAttempts(res.attempts);
-
-    const immediateHistory = res.history.map((rec) => ({
-      guess: rec.guess,
-      feedback: rec.result as FeedbackType,
-    }));
-    setHistory(immediateHistory);
-
-    let newRange: Range = { min: 1, max: 10000 };
-    for (const rec of res.history) {
-      if (rec.result === "low") {
-        newRange = { ...newRange, min: Math.max(newRange.min, rec.guess + 1) };
-      } else if (rec.result === "high") {
-        newRange = { ...newRange, max: Math.min(newRange.max, rec.guess - 1) };
-      } else if (rec.result === "correct") {
-        newRange = { min: rec.guess, max: rec.guess };
-      }
-    }
-    setRange(newRange);
-
-    const last = res.history[res.history.length - 1];
-    setCurrentFeedback(last ? (last.result as FeedbackType) : null);
-
-    setGameState(
-      res.status === "aborted"
-        ? "aborted"
-        : last && last.result === "correct"
-        ? "won"
-        : "playing"
-    );
+    // Navigate to bot/ID where state is preloaded
+    router.push(`/bot/${res.hostGameId}`);
   };
 
   const togglePause = () => {
@@ -193,48 +203,34 @@ export default function BotGameServer() {
 
                 {(gameState === "playing" || gameState === "paused") && (
                   <div className="space-y-4">
-                    {/* Controls */}
-                    <div className="flex items-center justify-center gap-2">
-                      <Button onClick={togglePause} variant="outline" className="gap-2">
-                        {gameState === "playing" ? (
-                          <>
-                            <Pause className="h-4 w-4" /> Pause
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4" /> Resume
-                          </>
-                        )}
-                      </Button>
-                      <Button onClick={resetToSelection} variant="outline" className="gap-2">
-                        <RotateCcw className="h-4 w-4" /> Reset
-                      </Button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Button onClick={togglePause} variant="outline" size="sm" className="gap-2">
+                          {gameState === "playing" ? (
+                            <>
+                              <Pause className="h-4 w-4" />
+                              Pause
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-4 w-4" />
+                              Resume
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Attempts: {attempts}
+                      </div>
                     </div>
 
-                    {/* Current feedback */}
-                    <div className="flex items-center justify-center gap-4 py-4">
-                      {currentFeedback === "low" && (
-                        <div className="flex flex-col items-center gap-2">
-                          <TrendingUp className="h-12 w-12 text-accent" />
-                          <p className="text-xl font-semibold text-accent">Go Higher!</p>
-                          <p className="text-sm text-muted-foreground">The number is larger than the guess</p>
-                        </div>
-                      )}
-                      {currentFeedback === "high" && (
-                        <div className="flex flex-col items-center gap-2">
-                          <TrendingDown className="h-12 w-12 text-destructive" />
-                          <p className="text-xl font-semibold text-destructive">Go Lower!</p>
-                          <p className="text-sm text-muted-foreground">The number is smaller than the guess</p>
-                        </div>
-                      )}
-                      {!currentFeedback && (
-                        <Badge variant="secondary" className="text-sm">WAITING</Badge>
-                      )}
-                    </div>
-
-                    {/* Range progress bar */}
+                    {/* Range visualization */}
                     <div>
-                      <div className="h-2 w-full rounded bg-secondary">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Range: {range.min}</span>
+                        <span>{range.max}</span>
+                      </div>
+                      <div className="relative h-2 w-full rounded bg-muted">
                         <div
                           className="h-full bg-accent transition-all"
                           style={{ width: `${((range.max - range.min) / 10000) * 100}%` }}
