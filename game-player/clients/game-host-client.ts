@@ -35,15 +35,17 @@ export class GameHostClient {
     body?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
+    const isBodyMethod = method === "POST" || method === "PUT" || method === "PATCH";
+
     const finalConfig: AxiosRequestConfig = {
       method,
       url: endpoint,
-      data: body ?? undefined,
+      data: body ?? (isBodyMethod ? {} : undefined),
       headers: {
         ...(config?.headers ?? {}),
         Authorization: `Bearer ${this.token}`,
         Accept: "application/json",
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(isBodyMethod ? { "Content-Type": "application/json" } : {}),
       },
       ...config,
     };
