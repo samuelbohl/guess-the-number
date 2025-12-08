@@ -16,19 +16,58 @@ function getJwks(tenantId: string) {
   return jwksCache[tenantId]
 }
 
+// Existing strict verification (issuer + audience)
 export async function verifyAzureJwt(token: string, opts: VerifyOptions): Promise<{ payload: JWTPayload; header: JWTHeaderParameters; }>{
   const { tenantId, audience } = opts
   const jwks = getJwks(tenantId)
-
-  // Typical issuer for v2 tokens
   const issuer = `https://login.microsoftonline.com/${tenantId}/v2.0`
-
   const { payload, protectedHeader } = await jwtVerify(token, jwks, {
     issuer,
     audience,
   })
-
   return { payload, header: protectedHeader }
+}
+
+// Helper: extract tenantId from the token's iss claim
+function extractTenantIdFromIss(iss: string | undefined): string | undefined {
+  if (!iss) return undefined
+  try {
+    const u = new URL(iss)
+    // Typical path: /{tenantId}/v2.0
+    const parts = u.pathname.split('/').filter(Boolean)
+    if (parts.length >= 1) {
+      return parts[0]
+    }
+  } catch {
+    // ignore
+  }
+  return undefined
+}
+
+function decodePayload(token: string): JWTPayload | undefined {
+  try {
+    const parts = token.split('.')
+    if (parts.length < 2) return undefined
+    const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4)
+    const json = Buffer.from(padded, 'base64').toString('utf-8')
+    return JSON.parse(json)
+  } catch {
+    return undefined
+  }
+}
+
+// New: signature-only verification using remote JWKS derived from the token itself
+export async function verifyJwtSignatureOnly(token: string): Promise<{ payload: JWTPayload; header: JWTHeaderParameters; }>{
+  const payload = decodePayload(token)
+  const tenantId = extractTenantIdFromIss(payload?.iss)
+  if (!tenantId) {
+    throw new Error('Unable to determine tenant from token issuer')
+  }
+  const jwks = getJwks(tenantId)
+  // Do not pass issuer/audience -> signature-only (with default exp/nbf checks)
+  const { payload: verifiedPayload, protectedHeader } = await jwtVerify(token, jwks, {})
+  return { payload: verifiedPayload, header: protectedHeader }
 }
 
 export function computeTokenTimings(nowEpochSec: number, payload: JWTPayload) {

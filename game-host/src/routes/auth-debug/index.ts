@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { verifyAzureJwt, computeTokenTimings } from '../../lib/azureJwt.js'
+import { verifyJwtSignatureOnly, computeTokenTimings } from '../../lib/azureJwt.js'
 
 const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
   fastify.get('/', async (request) => {
@@ -10,6 +10,7 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
       'x-ms-token-aad-id-token',
       'x-ms-token-aad-access-token',
       'x-ms-token-aad-refresh-token',
+      'authorization',
     ] as const
 
     const headers: Record<string, string | undefined> = {}
@@ -17,9 +18,14 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
       headers[k] = request.headers[k] as string | undefined
     }
 
-    const idToken = headers['x-ms-token-aad-id-token']
-    const tenantId = process.env.AZURE_TENANT_ID
-    const audience = process.env.AZURE_AUDIENCE
+    // Prefer Bearer token from Authorization header, fallback to x-ms-token-aad-id-token
+    let token: string | undefined
+    const authHeader = headers['authorization']
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring('Bearer '.length)
+    } else {
+      token = headers['x-ms-token-aad-id-token']
+    }
 
     const now = new Date()
     const nowEpochSec = Math.floor(now.getTime() / 1000)
@@ -33,52 +39,44 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
       header: undefined as any,
     }
 
-    if (idToken) {
-      if (tenantId && audience) {
-        try {
-          const { payload, header } = await verifyAzureJwt(idToken, { tenantId, audience })
-          verification = {
-            checked: true,
-            verified: true,
-            timings: computeTokenTimings(nowEpochSec, payload),
-            payload,
-            header,
-          }
-        } catch (e) {
-          const err = e as Error
-          verification = {
-            checked: true,
-            verified: false,
-            reason: err.message,
-          }
-          // Attempt to decode claims for expiry insight even if signature failed
-          try {
-            const parts = idToken.split('.')
-            if (parts.length >= 2) {
-              const payloadStr = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8')
-              const decoded = JSON.parse(payloadStr)
-              verification.timings = computeTokenTimings(nowEpochSec, decoded)
-              verification.payload = decoded
-            }
-          } catch {}
+    if (token) {
+      try {
+        const { payload, header } = await verifyJwtSignatureOnly(token)
+        verification = {
+          checked: true,
+          verified: true,
+          timings: computeTokenTimings(nowEpochSec, payload),
+          payload,
+          header,
         }
-      } else {
+      } catch (e) {
+        const err = e as Error
         verification = {
           checked: true,
           verified: false,
-          reason: 'Missing AZURE_TENANT_ID or AZURE_AUDIENCE in environment',
+          reason: err.message,
         }
+        // Attempt to decode claims for expiry insight even if signature failed
+        try {
+          const parts = token.split('.')
+          if (parts.length >= 2) {
+            const payloadStr = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8')
+            const decoded = JSON.parse(payloadStr)
+            verification.timings = computeTokenTimings(nowEpochSec, decoded)
+            verification.payload = decoded
+          }
+        } catch {}
       }
     } else {
       verification = {
         checked: false,
         verified: false,
-        reason: 'No x-ms-token-aad-id-token header present',
+        reason: 'No bearer token or AAD ID token present',
       }
     }
 
     return {
-      headers: request.headers,
+      headers,
       verification,
       userFromPlugin: request.user ?? null,
     }
