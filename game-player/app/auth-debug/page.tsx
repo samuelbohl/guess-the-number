@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 export const dynamic = 'force-dynamic';
+import TokenActions from './TokenActions';
 
 export default async function AuthDebugPage() {
   // 1. Get the headers object
@@ -125,6 +126,7 @@ export default async function AuthDebugPage() {
           ) : (
             <p>No AAD ID token present in headers (x-ms-token-aad-id-token).</p>
           )}
+          <TokenActions returnPath={'/auth-debug'} />
         </div>
       </section>
 
