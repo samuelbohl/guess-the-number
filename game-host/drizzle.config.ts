@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import 'dotenv/config'
-import { defineConfig } from 'drizzle-kit'
+import 'dotenv/config';
+import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -14,4 +14,4 @@ export default defineConfig({
     database: process.env.PGDATABASE!,
     ssl: process.env.PGSSLMODE === 'disable' ? false : true, // disable on localhost for dev
   },
-})
+});

@@ -1,5 +1,5 @@
-import { FastifyPluginAsync } from 'fastify'
-import { verifyJwtStrictEnv, computeTokenTimings } from '../../lib/azureJwt.js'
+import { FastifyPluginAsync } from 'fastify';
+import { verifyJwtStrictEnv, computeTokenTimings } from '../../lib/azure-jwt.js';
 
 const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
   fastify.get('/', async (request) => {
@@ -11,24 +11,24 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
       'x-ms-token-aad-access-token',
       'x-ms-token-aad-refresh-token',
       'authorization',
-    ] as const
+    ] as const;
 
-    const headers: Record<string, string | undefined> = {}
+    const headers: Record<string, string | undefined> = {};
     for (const k of keys) {
-      headers[k] = request.headers[k] as string | undefined
+      headers[k] = request.headers[k] as string | undefined;
     }
 
     // Prefer Bearer token from Authorization header, fallback to x-ms-token-aad-id-token
-    let token: string | undefined
-    const authHeader = headers['authorization']
+    let token: string | undefined;
+    const authHeader = headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring('Bearer '.length)
+      token = authHeader.substring('Bearer '.length);
     } else {
-      token = headers['x-ms-token-aad-id-token']
+      token = headers['x-ms-token-aad-id-token'];
     }
 
-    const now = new Date()
-    const nowEpochSec = Math.floor(now.getTime() / 1000)
+    const now = new Date();
+    const nowEpochSec = Math.floor(now.getTime() / 1000);
 
     let verification: any = {
       checked: false,
@@ -37,33 +37,33 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
       timings: undefined as any,
       payload: undefined as any,
       header: undefined as any,
-    }
+    };
 
     if (token) {
       try {
-        const { payload, header } = await verifyJwtStrictEnv(token)
+        const { payload, header } = await verifyJwtStrictEnv(token);
         verification = {
           checked: true,
           verified: true,
           timings: computeTokenTimings(nowEpochSec, payload),
           payload,
           header,
-        }
+        };
       } catch (e) {
-        const err = e as Error
+        const err = e as Error;
         verification = {
           checked: true,
           verified: false,
           reason: err.message,
-        }
+        };
         // Attempt to decode claims for expiry insight even if signature failed
         try {
-          const parts = token.split('.')
+          const parts = token.split('.');
           if (parts.length >= 2) {
-            const payloadStr = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8')
-            const decoded = JSON.parse(payloadStr)
-            verification.timings = computeTokenTimings(nowEpochSec, decoded)
-            verification.payload = decoded
+            const payloadStr = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+            const decoded = JSON.parse(payloadStr);
+            verification.timings = computeTokenTimings(nowEpochSec, decoded);
+            verification.payload = decoded;
           }
         } catch {}
       }
@@ -72,15 +72,15 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
         checked: false,
         verified: false,
         reason: 'No bearer token or AAD ID token present',
-      }
+      };
     }
 
     return {
       headers,
       verification,
       userFromPlugin: request.user ?? null,
-    }
-  })
-}
+    };
+  });
+};
 
-export default authDebug
+export default authDebug;

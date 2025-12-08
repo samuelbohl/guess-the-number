@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify'
+import { FastifyPluginAsync } from 'fastify';
 
 const dbRoutes: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
   fastify.get('/migrations', async (_request, _reply) => {
@@ -7,11 +7,11 @@ const dbRoutes: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
       SELECT *
       FROM "drizzle"."__drizzle_migrations"
       ORDER BY 1
-      `
-    )
+      `,
+    );
 
-    return result.rows
-  })
-}
+    return result.rows;
+  });
+};
 
-export default dbRoutes
+export default dbRoutes;

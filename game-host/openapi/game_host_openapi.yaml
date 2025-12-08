@@ -53,6 +53,7 @@ paths:
                   - startedAt
   /games/{id}:
     get:
+      description: Get the status of a game for the authenticated player
       parameters:
         - schema:
             type: string
@@ -90,6 +91,7 @@ paths:
                   - startedAt
   /games/{id}/guess:
     post:
+      description: Submit a guess for a game for the authenticated player
       requestBody:
         content:
           application/json:
@@ -143,7 +145,12 @@ paths:
       responses:
         "200":
           description: Default Response
-  /health/db:
+  /health/live:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /health/ready:
     get:
       responses:
         "200":

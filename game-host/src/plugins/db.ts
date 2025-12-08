@@ -1,9 +1,9 @@
-import fp from 'fastify-plugin'
-import { Pool } from 'pg'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
-import * as path from 'node:path'
-import * as schema from '../db/schema.js'
+import fp from 'fastify-plugin';
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import * as path from 'node:path';
+import * as schema from '../db/schema.js';
 
 export default fp(async (fastify, _opts) => {
   const pool = new Pool({
@@ -12,25 +12,25 @@ export default fp(async (fastify, _opts) => {
     port: Number(process.env.PGPORT),
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    ssl: process.env.PGSSLMODE !== 'disable'
-  })
+    ssl: process.env.PGSSLMODE !== 'disable',
+  });
 
-  const db = drizzle(pool, { schema })
+  const db = drizzle(pool, { schema });
 
   // Apply migrations automatically on startup
-  await migrate(db, { migrationsFolder: path.join(process.cwd(), 'drizzle') })
+  await migrate(db, { migrationsFolder: path.join(process.cwd(), 'drizzle') });
 
-  fastify.decorate('db', db)
-  fastify.decorate('pgPool', pool)
+  fastify.decorate('db', db);
+  fastify.decorate('pgPool', pool);
 
   fastify.addHook('onClose', async () => {
-    await pool.end()
-  })
-})
+    await pool.end();
+  });
+});
 
 declare module 'fastify' {
   interface FastifyInstance {
-    db: ReturnType<typeof drizzle>
-    pgPool: Pool
+    db: ReturnType<typeof drizzle>;
+    pgPool: Pool;
   }
 }
