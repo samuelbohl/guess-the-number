@@ -16,8 +16,8 @@ export type Config = z.infer<typeof configSchema>;
 
 function loadConfig(): Config {
   try {
-    if (process.env.GITHUB_ACTIONS) {
-      // skip validation in GitHub Actions
+    if (process.env.CI) {
+      // skip validation in CI
       return {} as Config;
     }
 
