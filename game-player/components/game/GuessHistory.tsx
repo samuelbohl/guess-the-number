@@ -10,12 +10,12 @@ type Props = {
 
 export function GuessHistory({ history }: Props) {
   return (
-    <Card className="lg:col-span-1">
+    <Card className="lg:col-span-1 max-h-[800px]">
       <CardHeader>
         <CardTitle>Guess History</CardTitle>
         <CardDescription>Your previous attempts</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-y-auto">
         {history.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">No guesses yet</p>
         ) : (
