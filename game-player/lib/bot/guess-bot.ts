@@ -1,8 +1,8 @@
-import "server-only";
+import 'server-only';
 
-import { GameHostClient } from "@/lib/clients/game-host-client";
-import type { Range } from "@/lib/types/game";
-import type { GuessRecord, GuessStrategy } from "./GuessStrategy";
+import { GameHostClient } from '@/lib/clients/game-host-client';
+import type { Range } from '@/lib/types/game';
+import type { GuessRecord, GuessStrategy } from './guess-strategy';
 
 export type BotOptions = {
   initialRange?: Range;
@@ -12,7 +12,7 @@ export type BotOptions = {
 export type PlayResult = {
   attempts: number;
   history: GuessRecord[];
-  status: "completed" | "aborted";
+  status: 'completed' | 'aborted';
 };
 
 export class GuessBot {
@@ -40,25 +40,25 @@ export class GuessBot {
       const record: GuessRecord = { guess, result: res.result };
       this.history.push(record);
 
-      if (res.result === "low") {
+      if (res.result === 'low') {
         this.range = { ...this.range, min: Math.max(this.range.min, guess + 1) };
-      } else if (res.result === "high") {
+      } else if (res.result === 'high') {
         this.range = { ...this.range, max: Math.min(this.range.max, guess - 1) };
       }
 
       onStep?.(record, this.range);
 
-      if (res.result === "correct") {
-        return { attempts: this.history.length, history: this.history.slice(), status: "completed" };
+      if (res.result === 'correct') {
+        return { attempts: this.history.length, history: this.history.slice(), status: 'completed' };
       }
 
       // If range collapses invalidly, abort
       if (this.range.min > this.range.max) {
-        return { attempts: this.history.length, history: this.history.slice(), status: "aborted" };
+        return { attempts: this.history.length, history: this.history.slice(), status: 'aborted' };
       }
     }
 
-    return { attempts: this.history.length, history: this.history.slice(), status: "aborted" };
+    return { attempts: this.history.length, history: this.history.slice(), status: 'aborted' };
   }
 
   getRange(): Range {

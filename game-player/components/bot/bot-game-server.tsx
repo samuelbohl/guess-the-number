@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Target, Play, Pause, RotateCcw, Trophy, Zap } from "lucide-react";
-import type { FeedbackType, Range } from "@/lib/types/game";
-import type { BotAlgorithmKey } from "@/lib/actions/bot";
-import { useBotGame } from "@/lib/use-bot-game";
-import { AlgorithmSelection, DEFAULT_ALGORITHM_OPTIONS } from "@/components/bot/algorithm-selection";
-import { BotGuessHistory } from "@/components/bot/bot-guess-history";
+import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Target, Play, Pause, RotateCcw, Trophy, Zap } from 'lucide-react';
+import type { FeedbackType, Range } from '@/lib/types/game';
+import type { BotAlgorithmKey } from '@/lib/actions/bot';
+import { useBotGame } from '@/lib/use-bot-game';
+import { AlgorithmSelection, DEFAULT_ALGORITHM_OPTIONS } from '@/components/bot/algorithm-selection';
+import { BotGuessHistory } from '@/components/bot/bot-guess-history';
 
 type Props = {
   initialGameId?: string;
   initialAttempts?: number;
   initialRange?: Range;
   initialHistory?: { guess: number; feedback: FeedbackType }[];
-  initialStatus?: "active" | "completed";
+  initialStatus?: 'active' | 'completed';
   initialAlgorithm?: BotAlgorithmKey;
 };
 
@@ -49,7 +49,7 @@ export default function BotGameServer({
 
   const selectedOption = useMemo(
     () => DEFAULT_ALGORITHM_OPTIONS.find((o) => o.key === selectedAlgorithm) || null,
-    [selectedAlgorithm]
+    [selectedAlgorithm],
   );
 
   return (
@@ -66,7 +66,7 @@ export default function BotGameServer({
           </p>
         </div>
 
-        {gameState === "idle" && !selectedAlgorithm && (
+        {gameState === 'idle' && !selectedAlgorithm && (
           <div className="space-y-6">
             <AlgorithmSelection
               options={DEFAULT_ALGORITHM_OPTIONS}
@@ -76,29 +76,29 @@ export default function BotGameServer({
           </div>
         )}
 
-        {(selectedAlgorithm || gameState !== "idle") && (
+        {(selectedAlgorithm || gameState !== 'idle') && (
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Main Game Card */}
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Game Board</span>
-                  {gameState !== "idle" && selectedOption && (
+                  {gameState !== 'idle' && selectedOption && (
                     <Badge variant="secondary" className="text-sm">
                       {selectedOption.title}
                     </Badge>
                   )}
                 </CardTitle>
                 <CardDescription>
-                  {gameState === "idle" && selectedOption && `Ready to start with ${selectedOption.title}`}
-                  {(gameState === "playing" || gameState === "paused") &&
+                  {gameState === 'idle' && selectedOption && `Ready to start with ${selectedOption.title}`}
+                  {(gameState === 'playing' || gameState === 'paused') &&
                     `Attempts: ${attempts} | Range: ${range.min} - ${range.max}`}
-                  {gameState === "won" && `Bot found the number in ${attempts} attempts!`}
-                  {gameState === "aborted" && `Bot aborted. Range collapsed or max attempts reached.`}
+                  {gameState === 'won' && `Bot found the number in ${attempts} attempts!`}
+                  {gameState === 'aborted' && `Bot aborted. Range collapsed or max attempts reached.`}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {gameState === "idle" && selectedOption && (
+                {gameState === 'idle' && selectedOption && (
                   <div className="flex flex-col items-center justify-center space-y-4 py-12">
                     <div className="rounded-full bg-accent/10 p-6">
                       <Zap className="h-16 w-16 text-accent" />
@@ -106,7 +106,11 @@ export default function BotGameServer({
                     <p className="text-center text-lg font-semibold">{selectedOption.title}</p>
                     <p className="max-w-md text-center text-sm text-muted-foreground">{selectedOption.description}</p>
                     <div className="flex gap-2">
-                      <Button onClick={() => void startNewGame()} size="lg" className="gap-2 bg-accent hover:bg-accent/90">
+                      <Button
+                        onClick={() => void startNewGame()}
+                        size="lg"
+                        className="gap-2 bg-accent hover:bg-accent/90"
+                      >
                         <Play className="h-4 w-4" />
                         Start Bot
                       </Button>
@@ -114,12 +118,12 @@ export default function BotGameServer({
                   </div>
                 )}
 
-                {(gameState === "playing" || gameState === "paused") && (
+                {(gameState === 'playing' || gameState === 'paused') && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Button onClick={togglePause} variant="outline" size="sm" className="gap-2">
-                          {gameState === "playing" ? (
+                          {gameState === 'playing' ? (
                             <>
                               <Pause className="h-4 w-4" />
                               Pause
@@ -154,7 +158,7 @@ export default function BotGameServer({
                   </div>
                 )}
 
-                {gameState === "won" && (
+                {gameState === 'won' && (
                   <div className="flex flex-col items-center justify-center space-y-6 py-8">
                     <div className="rounded-full bg-success/10 p-6">
                       <Trophy className="h-16 w-16 text-success" />
@@ -162,13 +166,17 @@ export default function BotGameServer({
                     <div className="text-center">
                       <h3 className="text-2xl font-bold text-success">Bot Won!</h3>
                       <p className="mt-2 text-muted-foreground">
-                        The {selectedOption?.title} algorithm found the number {" "}
-                        <span className="font-bold text-foreground">{history[history.length - 1]?.guess ?? "?"}</span> {" "}
+                        The {selectedOption?.title} algorithm found the number{' '}
+                        <span className="font-bold text-foreground">{history[history.length - 1]?.guess ?? '?'}</span>{' '}
                         in <span className="font-bold text-foreground">{attempts}</span> attempts
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => void startNewGame()} size="lg" className="gap-2 bg-accent hover:bg-accent/90">
+                      <Button
+                        onClick={() => void startNewGame()}
+                        size="lg"
+                        className="gap-2 bg-accent hover:bg-accent/90"
+                      >
                         <Play className="h-4 w-4" />
                         Try Again
                       </Button>
@@ -180,7 +188,7 @@ export default function BotGameServer({
                   </div>
                 )}
 
-                {gameState === "aborted" && (
+                {gameState === 'aborted' && (
                   <div className="flex flex-col items-center justify-center space-y-6 py-8">
                     <div className="rounded-full bg-destructive/10 p-6">
                       <Trophy className="h-16 w-16 text-destructive" />

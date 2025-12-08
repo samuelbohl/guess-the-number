@@ -32,10 +32,7 @@ export default function TokenActions({ returnPath }: { returnPath: string }) {
       >
         {loading ? 'Refreshing…' : 'Refresh tokens'}
       </button>
-      <a
-        href={loginUrl}
-        style={{ color: '#0366d6', textDecoration: 'none' }}
-      >
+      <a href={loginUrl} style={{ color: '#0366d6', textDecoration: 'none' }}>
         Re-authenticate
       </a>
     </div>

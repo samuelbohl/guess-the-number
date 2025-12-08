@@ -70,9 +70,9 @@ export default async function AuthDebugPage() {
   // 2. Define the keys we want to look for
   const authHeaders = [
     'x-ms-client-principal-name', // User email/ID
-    'x-ms-client-principal-id',   // Unique User ID
-    'x-ms-client-principal-idp',  // Identity Provider (e.g., aad, google)
-    'x-ms-token-aad-id-token',    // JWT Token (Entra ID)
+    'x-ms-client-principal-id', // Unique User ID
+    'x-ms-client-principal-idp', // Identity Provider (e.g., aad, google)
+    'x-ms-token-aad-id-token', // JWT Token (Entra ID)
     'x-ms-token-aad-access-token',
     'x-ms-token-aad-refresh-token',
   ];
@@ -99,9 +99,7 @@ export default async function AuthDebugPage() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-        Azure Auth Debugger
-      </h1>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Azure Auth Debugger</h1>
 
       <section style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>0. Server Time & Token Status</h2>
@@ -112,12 +110,28 @@ export default async function AuthDebugPage() {
           {idToken ? (
             tokenStatus ? (
               <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-                <li><strong>Expired:</strong> {String(tokenStatus.expired)}</li>
-                {tokenStatus.expISO && <li><strong>exp:</strong> {tokenStatus.exp} ({tokenStatus.expISO})</li>}
-                {tokenStatus.iatISO && <li><strong>iat:</strong> {tokenStatus.iat} ({tokenStatus.iatISO})</li>}
-                {tokenStatus.nbfISO && <li><strong>nbf:</strong> {tokenStatus.nbf} ({tokenStatus.nbfISO})</li>}
+                <li>
+                  <strong>Expired:</strong> {String(tokenStatus.expired)}
+                </li>
+                {tokenStatus.expISO && (
+                  <li>
+                    <strong>exp:</strong> {tokenStatus.exp} ({tokenStatus.expISO})
+                  </li>
+                )}
+                {tokenStatus.iatISO && (
+                  <li>
+                    <strong>iat:</strong> {tokenStatus.iat} ({tokenStatus.iatISO})
+                  </li>
+                )}
+                {tokenStatus.nbfISO && (
+                  <li>
+                    <strong>nbf:</strong> {tokenStatus.nbf} ({tokenStatus.nbfISO})
+                  </li>
+                )}
                 {typeof tokenStatus.expiresInSeconds === 'number' && (
-                  <li><strong>expiresInSeconds:</strong> {tokenStatus.expiresInSeconds}</li>
+                  <li>
+                    <strong>expiresInSeconds:</strong> {tokenStatus.expiresInSeconds}
+                  </li>
                 )}
               </ul>
             ) : (
@@ -142,12 +156,8 @@ export default async function AuthDebugPage() {
           <tbody>
             {headerValues.map((item) => (
               <tr key={item.key}>
-                <td style={{ padding: '8px', border: '1px solid #ccc', fontWeight: 'bold' }}>
-                  {item.key}
-                </td>
-                <td style={{ padding: '8px', border: '1px solid #ccc', wordBreak: 'break-all' }}>
-                  {item.value}
-                </td>
+                <td style={{ padding: '8px', border: '1px solid #ccc', fontWeight: 'bold' }}>{item.key}</td>
+                <td style={{ padding: '8px', border: '1px solid #ccc', wordBreak: 'break-all' }}>{item.value}</td>
               </tr>
             ))}
           </tbody>
@@ -156,7 +166,9 @@ export default async function AuthDebugPage() {
 
       <section>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>2. Decoded Client Principal (Claims)</h2>
-        <div style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}>
+        <div
+          style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}
+        >
           {principalDecoded ? (
             <pre>{JSON.stringify(principalDecoded, null, 2)}</pre>
           ) : (
@@ -172,13 +184,13 @@ export default async function AuthDebugPage() {
 
       <section>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>3. Decoded AAD ID Token</h2>
-        <div style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}>
+        <div
+          style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}
+        >
           {decodedIdToken ? (
             <pre>{JSON.stringify(decodedIdToken, null, 2)}</pre>
           ) : (
-            <p>
-              No AAD ID token found or failed to decode.
-            </p>
+            <p>No AAD ID token found or failed to decode.</p>
           )}
         </div>
       </section>

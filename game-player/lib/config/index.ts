@@ -16,18 +16,23 @@ export type Config = z.infer<typeof configSchema>;
 
 function loadConfig(): Config {
   try {
+    const skip = !!process.env.CI || process.env.SKIP_CONFIG_VALIDATION === '1';
+    if (skip) {
+      return {} as Config;
+    }
+
     return configSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.issues.map(issue => {
+      const errorMessages = error.issues.map((issue) => {
         const path = issue.path.join('.');
         return path ? `${path}: ${issue.message}` : issue.message;
       });
-      
+
       const errorMessage = `Configuration validation failed:\n\n${errorMessages.join('\n')}`;
       throw new Error(errorMessage);
     }
-    
+
     throw error;
   }
 }

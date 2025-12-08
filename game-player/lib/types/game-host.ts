@@ -1,13 +1,13 @@
 export type GameHostCreateGameResponse = {
   id: string;
-  status: "active" | "completed" | string;
+  status: 'active' | 'completed' | string;
   attempts: number;
   startedAt: string;
 };
 
 export type GameHostGetGameResponse = {
   id: string;
-  status: "active" | "completed" | string;
+  status: 'active' | 'completed' | string;
   attempts: number;
   startedAt: string;
   finishedAt: string | null;
@@ -15,8 +15,8 @@ export type GameHostGetGameResponse = {
 };
 
 export type GameHostSubmitGuessResponse = {
-  result: "low" | "high" | "correct";
-  status: "active" | "completed" | string;
+  result: 'low' | 'high' | 'correct';
+  status: 'active' | 'completed' | string;
   attempts: number;
   lastGuessAt: string;
   finishedAt: string | null;
@@ -28,7 +28,7 @@ export class GameHostApiError extends Error {
 
   constructor(message: string, status?: number, details?: unknown) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.details = details;
   }

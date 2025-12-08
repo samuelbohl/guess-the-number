@@ -1,35 +1,33 @@
-"use server";
+'use server';
 
-import { headers } from "next/headers";
-import { GameHostClient } from "@/lib/clients/game-host-client";
-import { getDb } from "@/lib/db/client";
-import { playerGames, playerGuesses } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { Strategies, GuessBot } from "@/lib/bot";
-import type { GuessRecord } from "@/lib/bot/GuessStrategy";
-import { AuthenticationError, DatabaseError, logError } from "@/lib/errors";
+import { headers } from 'next/headers';
+import { GameHostClient } from '@/lib/clients/game-host-client';
+import { getDb } from '@/lib/db/client';
+import { playerGames, playerGuesses } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { Strategies, GuessBot } from '@/lib/bot';
+import type { GuessRecord } from '@/lib/bot/guess-strategy';
+import { AuthenticationError, DatabaseError, logError } from '@/lib/errors';
 
 export type BotAlgorithmKey = keyof typeof Strategies;
 
 export type BotPlayResponse = {
   hostGameId: string;
   attempts: number;
-  status: "completed" | "aborted";
-  history: { guess: number; result: "low" | "high" | "correct" }[];
+  status: 'completed' | 'aborted';
+  history: { guess: number; result: 'low' | 'high' | 'correct' }[];
 };
 
-export async function startAndPlayBotGameAction(
-  algorithm: BotAlgorithmKey
-): Promise<BotPlayResponse> {
+export async function startAndPlayBotGameAction(algorithm: BotAlgorithmKey): Promise<BotPlayResponse> {
   const headerList = await headers();
-  const token = headerList.get("x-ms-token-aad-id-token");
+  const token = headerList.get('x-ms-token-aad-id-token');
   if (!token) {
     const error = new AuthenticationError("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
     logError(error, { action: 'startAndPlayBotGameAction', algorithm, reason: 'missing_token' });
     throw error;
   }
 
-  const principalId = headerList.get("x-ms-client-principal-id");
+  const principalId = headerList.get('x-ms-client-principal-id');
   if (!principalId) {
     const error = new AuthenticationError("Missing principal ID in 'x-ms-client-principal-id' header.");
     logError(error, { action: 'startAndPlayBotGameAction', algorithm, reason: 'missing_principal' });
@@ -44,10 +42,10 @@ export async function startAndPlayBotGameAction(
     .insert(playerGames)
     .values({
       playerId: principalId,
-      mode: "bot",
+      mode: 'bot',
       hostGameId: created.id,
       algorithm,
-      status: "active",
+      status: 'active',
       attempts: created.attempts ?? 0,
       rangeMin: 1,
       rangeMax: 10000,
@@ -73,18 +71,24 @@ export async function startAndPlayBotGameAction(
       value: rec.guess,
       feedback: rec.result,
     });
-    
+
     if (!guessResult) {
       const error = new DatabaseError('Failed to save bot guess');
-      logError(error, { action: 'startAndPlayBotGameAction', algorithm, gameId: created.id, guess: rec.guess, reason: 'save_guess_failed' });
+      logError(error, {
+        action: 'startAndPlayBotGameAction',
+        algorithm,
+        gameId: created.id,
+        guess: rec.guess,
+        reason: 'save_guess_failed',
+      });
       throw error;
     }
 
-    if (rec.result === "low") {
+    if (rec.result === 'low') {
       rangeMin = Math.max(rangeMin, rec.guess + 1);
-    } else if (rec.result === "high") {
+    } else if (rec.result === 'high') {
       rangeMax = Math.min(rangeMax, rec.guess - 1);
-    } else if (rec.result === "correct") {
+    } else if (rec.result === 'correct') {
       rangeMin = rec.guess;
       rangeMax = rec.guess;
     }
@@ -95,17 +99,22 @@ export async function startAndPlayBotGameAction(
     .update(playerGames)
     .set({
       attempts: hostGame.attempts ?? playResult.attempts,
-      status: hostGame.status === "completed" ? "completed" : "active",
+      status: hostGame.status === 'completed' ? 'completed' : 'active',
       lastGuessAt: hostGame.lastGuessAt ? new Date(hostGame.lastGuessAt) : new Date(),
       finishedAt: hostGame.finishedAt ? new Date(hostGame.finishedAt) : undefined,
       rangeMin,
       rangeMax,
     })
     .where(eq(playerGames.id, playerGameId));
-    
+
   if (!updateResult) {
     const error = new DatabaseError('Failed to update game state');
-    logError(error, { action: 'startAndPlayBotGameAction', algorithm, gameId: created.id, reason: 'update_game_failed' });
+    logError(error, {
+      action: 'startAndPlayBotGameAction',
+      algorithm,
+      gameId: created.id,
+      reason: 'update_game_failed',
+    });
     throw error;
   }
 

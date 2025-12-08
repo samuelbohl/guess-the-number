@@ -1,8 +1,8 @@
-import type { Range } from "@/lib/types/game";
-import type { GuessStrategy } from "../GuessStrategy";
+import type { Range } from '@/lib/types/game';
+import type { GuessStrategy } from '../guess-strategy';
 
 export class RandomSearchStrategy implements GuessStrategy {
-  name = "random";
+  name = 'random';
   reset(_range: Range) {}
   pick(range: Range): number {
     const min = Math.ceil(range.min);

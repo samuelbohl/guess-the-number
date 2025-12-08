@@ -1,29 +1,35 @@
-"use client"
+'use client';
 
-import type React from "react"
+import type React from 'react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Target } from "lucide-react"
-import { useGuessGame } from "@/lib/useGuessGame"
-import { GuessControls } from "@/components/game/GuessControls"
-import { FeedbackPanel } from "@/components/game/FeedbackPanel"
-import { RangeIndicator } from "@/components/game/RangeIndicator"
-import { GuessHistory } from "@/components/game/GuessHistory"
-import { GameWon } from "@/components/game/GameWon"
-import { startNewGameAction } from "@/lib/actions/game"
-import type { Range, GuessHistoryItem } from "@/lib/types/game"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Target } from 'lucide-react';
+import { useGuessGame } from '@/lib/use-guess-game';
+import { GuessControls } from '@/components/game/guess-controls';
+import { FeedbackPanel } from '@/components/game/feedback-panel';
+import { RangeIndicator } from '@/components/game/range-indicator';
+import { GuessHistory } from '@/components/game/guess-history';
+import { GameWon } from '@/components/game/game-won';
+import { startNewGameAction } from '@/lib/actions/game';
+import type { Range, GuessHistoryItem } from '@/lib/types/game';
 
 type Props = {
-  initialGameId?: string
-  initialAttempts?: number
-  initialRange?: Range
-  initialHistory?: GuessHistoryItem[]
-  initialStatus?: "active" | "completed"
-}
+  initialGameId?: string;
+  initialAttempts?: number;
+  initialRange?: Range;
+  initialHistory?: GuessHistoryItem[];
+  initialStatus?: 'active' | 'completed';
+};
 
-export default function GuessTheNumberGame({ initialGameId, initialAttempts, initialRange, initialHistory, initialStatus }: Props) {
+export default function GuessTheNumberGame({
+  initialGameId,
+  initialAttempts,
+  initialRange,
+  initialHistory,
+  initialStatus,
+}: Props) {
   const {
     gameState,
     gameId,
@@ -41,7 +47,7 @@ export default function GuessTheNumberGame({ initialGameId, initialAttempts, ini
     range: initialRange,
     history: initialHistory,
     status: initialStatus,
-  })
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16">
@@ -65,20 +71,20 @@ export default function GuessTheNumberGame({ initialGameId, initialAttempts, ini
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Game Board</span>
-                {gameState === "playing" && (
+                {gameState === 'playing' && (
                   <Badge variant="secondary" className="text-sm">
                     Game ID: {gameId?.slice(-8)}
                   </Badge>
                 )}
               </CardTitle>
               <CardDescription>
-                {gameState === "idle" && "Start a new game to begin guessing"}
-                {gameState === "playing" && `Attempts: ${attempts} | Range: ${range.min} - ${range.max}`}
-                {gameState === "won" && `Congratulations! You won in ${attempts} attempts!`}
+                {gameState === 'idle' && 'Start a new game to begin guessing'}
+                {gameState === 'playing' && `Attempts: ${attempts} | Range: ${range.min} - ${range.max}`}
+                {gameState === 'won' && `Congratulations! You won in ${attempts} attempts!`}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {gameState === "idle" && (
+              {gameState === 'idle' && (
                 <div className="flex flex-col items-center justify-center space-y-4 py-12">
                   <div className="rounded-full bg-primary/10 p-6">
                     <Target className="h-16 w-16 text-primary" />
@@ -91,7 +97,7 @@ export default function GuessTheNumberGame({ initialGameId, initialAttempts, ini
                 </div>
               )}
 
-              {gameState === "playing" && (
+              {gameState === 'playing' && (
                 <div className="space-y-4">
                   <GuessControls
                     guess={guess}
@@ -104,7 +110,7 @@ export default function GuessTheNumberGame({ initialGameId, initialAttempts, ini
                 </div>
               )}
 
-              {gameState === "won" && <GameWon attempts={attempts} onRestart={startNewGame} />}
+              {gameState === 'won' && <GameWon attempts={attempts} onRestart={startNewGame} />}
             </CardContent>
           </Card>
 
@@ -113,5 +119,5 @@ export default function GuessTheNumberGame({ initialGameId, initialAttempts, ini
         </div>
       </div>
     </div>
-  )
+  );
 }

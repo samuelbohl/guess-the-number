@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { startAndPlayBotGameAction, type BotAlgorithmKey } from "@/lib/actions/bot";
-import type { FeedbackType, Range } from "@/lib/types/game";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { startAndPlayBotGameAction, type BotAlgorithmKey } from '@/lib/actions/bot';
+import type { FeedbackType, Range } from '@/lib/types/game';
 
 export type BotInitialState = {
   initialGameId?: string;
   initialAttempts?: number;
   initialRange?: Range;
   initialHistory?: { guess: number; feedback: FeedbackType }[];
-  initialStatus?: "active" | "completed";
+  initialStatus?: 'active' | 'completed';
   initialAlgorithm?: BotAlgorithmKey;
 };
 
-export type BotGameState = "idle" | "playing" | "paused" | "won" | "aborted";
+export type BotGameState = 'idle' | 'playing' | 'paused' | 'won' | 'aborted';
 
 export function useBotGame(initial?: BotInitialState) {
   const router = useRouter();
 
-  const [gameState, setGameState] = useState<BotGameState>("idle");
+  const [gameState, setGameState] = useState<BotGameState>('idle');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<BotAlgorithmKey | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [history, setHistory] = useState<{ guess: number; feedback: FeedbackType }[]>([]);
   const [range, setRange] = useState<Range>({ min: 1, max: 10000 });
 
   useEffect(() => {
-    if (initial?.initialGameId && gameState === "idle") {
+    if (initial?.initialGameId && gameState === 'idle') {
       if (initial?.initialAlgorithm) {
         setSelectedAlgorithm(initial.initialAlgorithm);
       }
@@ -35,20 +35,20 @@ export function useBotGame(initial?: BotInitialState) {
       const loadedRange = initial?.initialRange ?? { min: 1, max: 10000 };
       const last = loadedHistory.length > 0 ? loadedHistory[loadedHistory.length - 1] : null;
       const lastFeedback: FeedbackType | null = last ? last.feedback : null;
-      const completed = initial?.initialStatus === "completed" || lastFeedback === "correct";
+      const completed = initial?.initialStatus === 'completed' || lastFeedback === 'correct';
 
       setAttempts(loadedAttempts);
       setHistory(loadedHistory);
       setRange(loadedRange);
 
-      setGameState(completed ? "won" : "aborted");
+      setGameState(completed ? 'won' : 'aborted');
     }
   }, [initial, gameState]);
 
   const startNewGame = async () => {
     if (!selectedAlgorithm) return;
 
-    setGameState("playing");
+    setGameState('playing');
     setAttempts(0);
     setHistory([]);
     setRange({ min: 1, max: 10000 });
@@ -58,15 +58,15 @@ export function useBotGame(initial?: BotInitialState) {
   };
 
   const togglePause = () => {
-    if (gameState === "playing") {
-      setGameState("paused");
-    } else if (gameState === "paused") {
-      setGameState("playing");
+    if (gameState === 'playing') {
+      setGameState('paused');
+    } else if (gameState === 'paused') {
+      setGameState('playing');
     }
   };
 
   const resetToSelection = () => {
-    router.push("/bot");
+    router.push('/bot');
   };
 
   return {

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Trophy } from "lucide-react";
-import type { FeedbackType } from "@/lib/types/game";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, TrendingDown, Trophy } from 'lucide-react';
+import type { FeedbackType } from '@/lib/types/game';
 
 type HistoryItem = { guess: number; feedback: FeedbackType };
 
@@ -33,9 +33,9 @@ export function BotGuessHistory({ history }: Props) {
                     </span>
                     <span className="font-mono text-lg font-semibold">{item.guess}</span>
                   </div>
-                  {item.feedback === "low" && <TrendingUp className="h-5 w-5 text-accent" />}
-                  {item.feedback === "high" && <TrendingDown className="h-5 w-5 text-destructive" />}
-                  {item.feedback === "correct" && <Trophy className="h-5 w-5 text-success" />}
+                  {item.feedback === 'low' && <TrendingUp className="h-5 w-5 text-accent" />}
+                  {item.feedback === 'high' && <TrendingDown className="h-5 w-5 text-destructive" />}
+                  {item.feedback === 'correct' && <Trophy className="h-5 w-5 text-success" />}
                 </div>
               ))}
           </div>

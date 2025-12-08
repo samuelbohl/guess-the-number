@@ -1,9 +1,9 @@
-import type { Range } from "@/lib/types/game";
-import type { GuessStrategy } from "../GuessStrategy";
+import type { Range } from '@/lib/types/game';
+import type { GuessStrategy } from '../guess-strategy';
 
 // Fibonacci/golden-section inspired: partition interval by ~0.618 to shrink efficiently.
 export class FibonacciSearchStrategy implements GuessStrategy {
-  name = "fibonacci";
+  name = 'fibonacci';
   reset(_range: Range) {}
   pick(range: Range): number {
     const span = range.max - range.min;
