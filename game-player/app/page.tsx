@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Target, User, Bot } from "lucide-react"
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Target, User, Bot } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -29,9 +29,7 @@ export default function Home() {
                   <User className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle className="text-2xl">Manual Mode</CardTitle>
-                <CardDescription className="text-base">
-                  Play the game yourself
-                </CardDescription>
+                <CardDescription className="text-base">Play the game yourself</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/manual">
@@ -48,9 +46,7 @@ export default function Home() {
                   <Bot className="h-8 w-8 text-accent" />
                 </div>
                 <CardTitle className="text-2xl">Bot Mode</CardTitle>
-                <CardDescription className="text-base">
-                  Watch different algorithms compete
-                </CardDescription>
+                <CardDescription className="text-base">Watch different algorithms compete</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/bot">
@@ -64,5 +60,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }

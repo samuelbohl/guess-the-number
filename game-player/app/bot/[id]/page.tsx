@@ -1,20 +1,20 @@
-import { headers } from "next/headers";
-import BotGameServer from "@/components/bot/bot-game-server";
-import { getDb } from "@/lib/db/client";
-import { playerGames, playerGuesses } from "@/lib/db/schema";
-import { and, eq, asc } from "drizzle-orm";
-import type { BotAlgorithmKey } from "@/lib/actions/bot";
+import { headers } from 'next/headers';
+import BotGameServer from '@/components/bot/bot-game-server';
+import { getDb } from '@/lib/db/client';
+import { playerGames, playerGuesses } from '@/lib/db/schema';
+import { and, eq, asc } from 'drizzle-orm';
+import type { BotAlgorithmKey } from '@/lib/actions/bot';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function BotGamePage({ params }: { params: { id: string } }) {
   const headerList = await headers();
-  const token = headerList.get("x-ms-token-aad-id-token");
+  const token = headerList.get('x-ms-token-aad-id-token');
   if (!token) {
     throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
   }
 
-  const principalId = headerList.get("x-ms-client-principal-id");
+  const principalId = headerList.get('x-ms-client-principal-id');
   if (!principalId) {
     throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
   }
@@ -35,13 +35,13 @@ export default async function BotGamePage({ params }: { params: { id: string } }
     .limit(1);
 
   if (gameRow.length === 0) {
-    throw new Error("Game not found.");
+    throw new Error('Game not found.');
   }
 
   const playerGame = gameRow[0] ?? null;
   const initialAttempts = playerGame.attempts;
   const initialRange = { min: playerGame.rangeMin, max: playerGame.rangeMax };
-  const initialStatus = playerGame.status as "active" | "completed";
+  const initialStatus = playerGame.status as 'active' | 'completed';
   const initialAlgorithm = (playerGame.algorithm ?? undefined) as BotAlgorithmKey | undefined;
 
   const guesses = await db

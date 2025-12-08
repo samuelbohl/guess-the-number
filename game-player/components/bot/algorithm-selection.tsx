@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { type BotAlgorithmKey } from "@/lib/actions/bot";
-import { Brain, Waypoints, Wand, FunctionSquare } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { type BotAlgorithmKey } from '@/lib/actions/bot';
+import { Brain, Waypoints, Wand, FunctionSquare } from 'lucide-react';
 
 export type AlgorithmOption = {
   key: BotAlgorithmKey;
@@ -30,7 +30,7 @@ export function AlgorithmSelection({ options, selected, onSelect }: Props) {
             <Card
               key={opt.key}
               className={`cursor-pointer transition-all hover:scale-105 hover:border-accent hover:shadow-lg ${
-                selected === opt.key ? "border-primary" : ""
+                selected === opt.key ? 'border-primary' : ''
               }`}
               onClick={() => onSelect(opt.key)}
             >
@@ -51,27 +51,27 @@ export function AlgorithmSelection({ options, selected, onSelect }: Props) {
 
 export const DEFAULT_ALGORITHM_OPTIONS: AlgorithmOption[] = [
   {
-    key: "binary",
-    title: "Binary Search",
-    description: "Halve the range each step for optimal guesses.",
+    key: 'binary',
+    title: 'Binary Search',
+    description: 'Halve the range each step for optimal guesses.',
     icon: <Brain className="h-6 w-6" />,
   },
   {
-    key: "random",
-    title: "Random Search",
-    description: "Guess randomly within the current range.",
+    key: 'random',
+    title: 'Random Search',
+    description: 'Guess randomly within the current range.',
     icon: <Wand className="h-6 w-6" />,
   },
   {
-    key: "exponential",
-    title: "Exponential Search",
-    description: "Grow step size until overshoot, then shrink with binary.",
+    key: 'exponential',
+    title: 'Exponential Search',
+    description: 'Grow step size until overshoot, then shrink with binary.',
     icon: <Waypoints className="h-6 w-6" />,
   },
   {
-    key: "fibonacci",
-    title: "Fibonacci Search",
-    description: "Partition by golden ratio to narrow efficiently.",
+    key: 'fibonacci',
+    title: 'Fibonacci Search',
+    description: 'Partition by golden ratio to narrow efficiently.',
     icon: <FunctionSquare className="h-6 w-6" />,
   },
 ];

@@ -1,9 +1,9 @@
-import type { Range } from "@/lib/types/game";
-import type { GuessRecord, GuessStrategy } from "../GuessStrategy";
+import type { Range } from '@/lib/types/game';
+import type { GuessRecord, GuessStrategy } from '../guess-strategy';
 
 // Exponential search: grow step until overshoot ("high"), then switch to binary.
 export class ExponentialSearchStrategy implements GuessStrategy {
-  name = "exponential";
+  name = 'exponential';
   private step = 1;
   private usingBinary = false;
   reset(_range: Range) {
@@ -15,7 +15,7 @@ export class ExponentialSearchStrategy implements GuessStrategy {
     if (this.usingBinary) {
       return Math.floor((range.min + range.max) / 2);
     }
-    if (!last || last.result === "low") {
+    if (!last || last.result === 'low') {
       const guess = Math.min(range.min + this.step, range.max);
       this.step = Math.min(this.step * 2, Math.max(1, range.max - range.min));
       return guess;

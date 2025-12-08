@@ -1,12 +1,12 @@
-import { headers } from "next/headers";
-import { GameHostClient } from "@/lib/clients/game-host-client";
-import { GuessBot, Strategies } from "@/lib/bot";
+import { headers } from 'next/headers';
+import { GameHostClient } from '@/lib/clients/game-host-client';
+import { GuessBot, Strategies } from '@/lib/bot';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function BotTestPage() {
   const h = await headers();
-  const token = h.get("x-ms-token-aad-id-token");
+  const token = h.get('x-ms-token-aad-id-token');
   if (!token) {
     throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
   }
@@ -28,12 +28,27 @@ export default async function BotTestPage() {
         </p>
 
         <div className="space-y-2 mb-6">
-          <div>Strategy: <span className="font-mono">{strategy.name}</span></div>
-          <div>Game ID: <span className="font-mono">{created.id}</span></div>
-          <div>Status: <span className="font-mono">{result.status}</span></div>
-          <div>Attempts: <span className="font-mono">{result.attempts}</span></div>
-          <div>Default Range: <span className="font-mono">1 - 10000</span></div>
-          <div>Final Range: <span className="font-mono">{finalRange.min} - {finalRange.max}</span></div>
+          <div>
+            Strategy: <span className="font-mono">{strategy.name}</span>
+          </div>
+          <div>
+            Game ID: <span className="font-mono">{created.id}</span>
+          </div>
+          <div>
+            Status: <span className="font-mono">{result.status}</span>
+          </div>
+          <div>
+            Attempts: <span className="font-mono">{result.attempts}</span>
+          </div>
+          <div>
+            Default Range: <span className="font-mono">1 - 10000</span>
+          </div>
+          <div>
+            Final Range:{' '}
+            <span className="font-mono">
+              {finalRange.min} - {finalRange.max}
+            </span>
+          </div>
         </div>
 
         <h2 className="text-xl font-semibold mb-2">History</h2>
@@ -54,7 +69,7 @@ export default async function BotTestPage() {
               result,
             },
             null,
-            2
+            2,
           )}
         </pre>
       </div>

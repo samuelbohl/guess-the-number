@@ -1,18 +1,18 @@
-import Link from "next/link";
-import { headers } from "next/headers";
-import { and, desc, eq } from "drizzle-orm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { getDb } from "@/lib/db/client";
-import { playerGames } from "@/lib/db/schema";
-import { formatDate } from "@/lib/utils";
+import Link from 'next/link';
+import { headers } from 'next/headers';
+import { and, desc, eq } from 'drizzle-orm';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { getDb } from '@/lib/db/client';
+import { playerGames } from '@/lib/db/schema';
+import { formatDate } from '@/lib/utils';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function GamesPage() {
   const headerList = await headers();
-  const principalId = headerList.get("x-ms-client-principal-id");
+  const principalId = headerList.get('x-ms-client-principal-id');
 
   if (!principalId) {
     throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
@@ -32,9 +32,7 @@ export default async function GamesPage() {
           <Card className="transition-all hover:shadow-lg">
             <CardHeader className="border-b">
               <CardTitle className="text-2xl">Saved Games</CardTitle>
-              <CardDescription className="text-base">
-                A list of your games across manual and bot modes
-              </CardDescription>
+              <CardDescription className="text-base">A list of your games across manual and bot modes</CardDescription>
             </CardHeader>
             <CardContent>
               {games.length === 0 ? (
@@ -61,15 +59,11 @@ export default async function GamesPage() {
                         <tr key={g.id} className="border-t">
                           <td className="p-3 font-mono text-xs md:text-sm">{g.hostGameId}</td>
                           <td className="p-3">
-                            <Badge variant={g.mode === "manual" ? "default" : "secondary"}>
-                              {g.mode}
-                            </Badge>
+                            <Badge variant={g.mode === 'manual' ? 'default' : 'secondary'}>{g.mode}</Badge>
                           </td>
-                          <td className="p-3">{g.algorithm ?? "-"}</td>
+                          <td className="p-3">{g.algorithm ?? '-'}</td>
                           <td className="p-3">
-                            <Badge variant={g.status === "completed" ? "secondary" : "default"}>
-                              {g.status}
-                            </Badge>
+                            <Badge variant={g.status === 'completed' ? 'secondary' : 'default'}>{g.status}</Badge>
                           </td>
                           <td className="p-3">{g.attempts}</td>
                           <td className="p-3">
@@ -79,13 +73,15 @@ export default async function GamesPage() {
                           <td className="p-3">{formatDate(g.lastGuessAt)}</td>
                           <td className="p-3">{formatDate(g.finishedAt)}</td>
                           <td className="p-3">
-                            {g.mode === "manual" ? (
+                            {g.mode === 'manual' ? (
                               <Link href={`/manual/${g.hostGameId}`}>
                                 <Button size="sm">Open</Button>
                               </Link>
                             ) : (
                               <Link href={`/bot/${g.hostGameId}`}>
-                                <Button size="sm" variant="secondary">Open</Button>
+                                <Button size="sm" variant="secondary">
+                                  Open
+                                </Button>
                               </Link>
                             )}
                           </td>

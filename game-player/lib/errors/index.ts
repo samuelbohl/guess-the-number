@@ -1,6 +1,5 @@
 import { isDevelopment, isProduction } from '@/lib/config';
 
-
 export enum ErrorCode {
   UNAUTHENTICATED = 'UNAUTHENTICATED',
   DATABASE_ERROR = 'DATABASE_ERROR',
@@ -11,11 +10,7 @@ export class AppError extends Error {
   public readonly statusCode: number;
   public readonly id: string;
 
-  constructor(
-    message: string,
-    code: ErrorCode,
-    statusCode: number
-  ) {
+  constructor(message: string, code: ErrorCode, statusCode: number) {
     super(message);
     this.name = 'AppError';
     this.code = code;
