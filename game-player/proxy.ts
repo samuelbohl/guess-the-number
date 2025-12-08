@@ -52,13 +52,13 @@ export async function proxy(req: NextRequest) {
   const isAuthenticated = Boolean(principal);
 
   const expired = exp !== undefined && nowEpoch >= exp;
-  const shouldValidate = Boolean(idToken) && Boolean(tenantId) && !expired;
+  const shouldValidate = Boolean(idToken) && Boolean(tenantId) && expired;
 
   // Single simple log per request
   logSimple(path, shouldValidate);
 
   // If we have an Easy Auth session but the token is expired, proactively refresh tokens.
-  if (isAuthenticated && expired) {
+  if (isAuthenticated && shouldValidate) {
     try {
       const cookieHeader = req.headers.get('cookie') ?? '';
       await fetch(`${url.origin}/.auth/refresh`, {
@@ -70,7 +70,7 @@ export async function proxy(req: NextRequest) {
   }
 
   // Redirect only when not authenticated (no Easy Auth session)
-  if (!isAuthenticated) {
+  if (!isAuthenticated && shouldValidate) {
     const returnUrl = `${url.origin}${path}`;
     const loginUrl = `${url.origin}/.auth/login/aad?post_login_redirect_uri=${encodeURIComponent(returnUrl)}`;
     return NextResponse.redirect(loginUrl);
@@ -79,14 +79,16 @@ export async function proxy(req: NextRequest) {
   // Signature and claims verification when applicable
   if (shouldValidate && idToken && tenantId) {
     try {
+      console.log('Validating token', idToken, tenantId, envClientId, aud);
       await verifyAzureJwt(idToken, {
         tenantId,
         audience: envClientId ?? aud ?? '',
       });
     } catch (e) {
-      const returnUrl = `${url.origin}${path}`;
-      const loginUrl = `${url.origin}/.auth/login/aad?post_login_redirect_uri=${encodeURIComponent(returnUrl)}`;
-      return NextResponse.redirect(loginUrl);
+      // eslint-disable-next-line no-console
+      console.log('Token validation failed', e);
+      // return 401 Unauthorized
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
 
