@@ -109,12 +109,7 @@ export default function BotGameServer({
   };
 
   const resetToSelection = () => {
-    setGameState("idle");
-    setSelectedAlgorithm(null);
-    setAttempts(0);
-    setHistory([]);
-    setRange({ min: 1, max: 10000 });
-    setCurrentFeedback(null);
+    router.push("/bot");
   };
 
   return (
@@ -304,14 +299,15 @@ export default function BotGameServer({
                       .reverse()
                       .map((item, index) => (
                         <div key={index} className="flex items-center justify-between rounded border p-2">
-                          <span className="flex items-center gap-2 text-sm">
-                            {item.feedback === "low" && <TrendingUp className="h-4 w-4 text-accent" />}
-                            {item.feedback === "high" && <TrendingDown className="h-4 w-4 text-destructive" />}
-                            Guess: {item.guess}
-                          </span>
-                          <Badge variant="secondary" className="text-xs">
-                            {item.feedback}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
+                              {history.length - index}
+                            </span>
+                            <span className="font-mono text-lg font-semibold">{item.guess}</span>
+                          </div>
+                          {item.feedback === "low" && <TrendingUp className="h-5 w-5 text-accent" />}
+                          {item.feedback === "high" && <TrendingDown className="h-5 w-5 text-destructive" />}
+                          {item.feedback === "correct" && <Trophy className="h-5 w-5 text-success" />}
                         </div>
                       ))}
                   </div>
