@@ -16,6 +16,18 @@ function getJwks(tenantId: string) {
   return jwksCache[tenantId]
 }
 
+// New: derive JWKS URL directly from issuer (supports AAD and CIAM)
+function getJwksFromIssuer(iss: string) {
+  const issuerUrl = new URL(iss)
+  const base = issuerUrl.origin + issuerUrl.pathname.replace(/\/$/, '')
+  const jwksUrl = new URL(base.replace(/\/v2\.0$/, '/discovery/v2.0/keys'))
+  const cacheKey = jwksUrl.toString()
+  if (!jwksCache[cacheKey]) {
+    jwksCache[cacheKey] = createRemoteJWKSet(jwksUrl)
+  }
+  return jwksCache[cacheKey]
+}
+
 // Existing strict verification (issuer + audience)
 export async function verifyAzureJwt(token: string, opts: VerifyOptions): Promise<{ payload: JWTPayload; header: JWTHeaderParameters; }>{
   const { tenantId, audience } = opts
@@ -60,11 +72,11 @@ function decodePayload(token: string): JWTPayload | undefined {
 // New: signature-only verification using remote JWKS derived from the token itself
 export async function verifyJwtSignatureOnly(token: string): Promise<{ payload: JWTPayload; header: JWTHeaderParameters; }>{
   const payload = decodePayload(token)
-  const tenantId = extractTenantIdFromIss(payload?.iss)
-  if (!tenantId) {
-    throw new Error('Unable to determine tenant from token issuer')
+  const iss = payload?.iss
+  if (!iss) {
+    throw new Error('Unable to determine issuer from token')
   }
-  const jwks = getJwks(tenantId)
+  const jwks = getJwksFromIssuer(iss)
   // Do not pass issuer/audience -> signature-only (with default exp/nbf checks)
   const { payload: verifiedPayload, protectedHeader } = await jwtVerify(token, jwks, {})
   return { payload: verifiedPayload, header: protectedHeader }
