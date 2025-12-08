@@ -2,7 +2,7 @@ name: Publish game-host image to Azure Container Registry
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - "game-host/**"
       - ".github/workflows/publish_game-host.yml"
@@ -17,8 +17,8 @@ jobs:
       contents: read
       packages: write
     env:
-      REGISTRY: ${{ secrets.DEV_ACR_LOGIN_SERVER }}
-      IMAGE_NAME: game-host-dev
+      REGISTRY: ${{ github.ref == 'refs/heads/main' && secrets.PROD_ACR_LOGIN_SERVER || secrets.DEV_ACR_LOGIN_SERVER }}
+      IMAGE_NAME: ${{ github.ref == 'refs/heads/main' && 'game-host-prod' || 'game-host-dev' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,8 +30,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DEV_ACR_USERNAME }}
-          password: ${{ secrets.DEV_ACR_PASSWORD }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.PROD_ACR_USERNAME || secrets.DEV_ACR_USERNAME }}
+          password: ${{ github.ref == 'refs/heads/main' && secrets.PROD_ACR_PASSWORD || secrets.DEV_ACR_PASSWORD }}
 
       - name: Extract Docker metadata (tags, labels)
         id: meta
