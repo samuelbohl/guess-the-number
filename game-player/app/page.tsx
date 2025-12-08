@@ -1,4 +1,4 @@
-import GuessTheNumberGame from "@/components/guess-the-number-game"
+import GuessTheNumberGame from "@/components/guess-the-number-game";
 
 export default function Home() {
   return (

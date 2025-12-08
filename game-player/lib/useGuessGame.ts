@@ -1,11 +1,11 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { GameState, FeedbackType, Range, GuessHistoryItem } from "@/types/game";
 import { startNewGame as startGameService } from "@/lib/gameService";
 
-export function useGuessGame() {
+export function useGuessGame(initialGameId?: string) {
   const [gameState, setGameState] = useState<GameState>("idle");
   const [gameId, setGameId] = useState<string | null>(null);
   const [guess, setGuess] = useState("");
@@ -14,6 +14,19 @@ export function useGuessGame() {
   const [history, setHistory] = useState<GuessHistoryItem[]>([]);
   const [range, setRange] = useState<Range>({ min: 1, max: 10000 });
   const [targetNumber, setTargetNumber] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (initialGameId && gameState === "idle") {
+      setGameId(initialGameId);
+      setGameState("playing");
+      setAttempts(0);
+      setHistory([]);
+      setFeedback("none");
+      setRange({ min: 1, max: 10000 });
+      setGuess("");
+      setTargetNumber(7342);
+    }
+  }, [initialGameId]);
 
   const startNewGame = async () => {
     const { gameId: id, range: initialRange } = await startGameService();

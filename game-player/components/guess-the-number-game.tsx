@@ -12,11 +12,13 @@ import { FeedbackPanel } from "@/components/game/FeedbackPanel"
 import { RangeIndicator } from "@/components/game/RangeIndicator"
 import { GuessHistory } from "@/components/game/GuessHistory"
 import { GameWon } from "@/components/game/GameWon"
+import { startNewGameAction } from "@/app/actions"
 
+type Props = {
+  initialGameId?: string
+}
 
-
-
-export default function GuessTheNumberGame() {
+export default function GuessTheNumberGame({ initialGameId }: Props) {
   const {
     gameState,
     gameId,
@@ -29,7 +31,7 @@ export default function GuessTheNumberGame() {
     startNewGame,
     submitGuess,
     handleKeyPress,
-  } = useGuessGame()
+  } = useGuessGame(initialGameId)
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16">
@@ -71,9 +73,11 @@ export default function GuessTheNumberGame() {
                   <div className="rounded-full bg-primary/10 p-6">
                     <Target className="h-16 w-16 text-primary" />
                   </div>
-                  <Button onClick={startNewGame} size="lg" className="gap-2">
-                    Start New Game
-                  </Button>
+                  <form action={startNewGameAction}>
+                    <Button type="submit" size="lg" className="gap-2">
+                      Start New Game
+                    </Button>
+                  </form>
                 </div>
               )}
 
