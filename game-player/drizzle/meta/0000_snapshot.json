@@ -178,8 +178,8 @@
       "name": "player_guess_feedback",
       "schema": "public",
       "values": [
-        "higher",
-        "lower",
+        "low",
+        "high",
         "correct"
       ]
     }
