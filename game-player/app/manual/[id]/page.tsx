@@ -11,12 +11,12 @@ export default async function ManualGamePage({ params }: { params: { id: string 
     throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
   }
   const client = new GameHostClient(token);
-  // Fetch server data for later use; UI will load into playing state with the ID
-  await client.getGame(params.id);
+  const { id } = await params;
+  await client.getGame(id);
 
   return (
     <main className="min-h-screen bg-background">
-      <GuessTheNumberGame initialGameId={params.id} />
+      <GuessTheNumberGame initialGameId={id} />
     </main>
   );
 }
