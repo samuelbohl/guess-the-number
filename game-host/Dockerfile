@@ -16,6 +16,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /usr/src/app/dist ./dist
+COPY drizzle ./drizzle
 
 EXPOSE 8080
 
