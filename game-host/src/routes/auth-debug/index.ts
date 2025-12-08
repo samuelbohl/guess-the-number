@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { verifyJwtSignatureOnly, computeTokenTimings } from '../../lib/azureJwt.js'
+import { verifyJwtStrictEnv, computeTokenTimings } from '../../lib/azureJwt.js'
 
 const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
   fastify.get('/', async (request) => {
@@ -41,7 +41,7 @@ const authDebug: FastifyPluginAsync = async (fastify): Promise<void> => {
 
     if (token) {
       try {
-        const { payload, header } = await verifyJwtSignatureOnly(token)
+        const { payload, header } = await verifyJwtStrictEnv(token)
         verification = {
           checked: true,
           verified: true,
