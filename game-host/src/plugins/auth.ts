@@ -1,24 +1,35 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
+import { verifyJwtStrictEnv } from '../lib/azureJwt.js'
 
 const authPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('preValidation', async (request) => {
-    const externalId = request.headers['x-ms-client-principal-id'] as string | undefined
-    const idp = request.headers['x-ms-client-principal-idp'] as string | undefined
-    const email = request.headers['x-ms-client-principal-name'] as string | undefined
+    const authHeader = request.headers['authorization'] as string | undefined
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      request.user = undefined
+      return
+    }
 
-    request.user = externalId
-      ? {
-          externalId,
-          idp,
-          email,
-        }
-      : undefined
+    const token = authHeader.slice('Bearer '.length)
+    try {
+      const { payload } = await verifyJwtStrictEnv(token);
+
+      if (!payload.oid || !payload.email || !payload.idp) {
+        request.user = undefined
+        return
+      }
+
+      request.user = { externalId: String(payload.oid), idp: String(payload.idp), email: String(payload.email) }
+      return
+    } catch {
+      request.user = undefined
+      return
+    }
   })
 
   fastify.decorate('requireAuth', async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request.user?.externalId) {
-      reply.unauthorized('Missing authentication headers from Azure App Service')
+    if (!request.user) {
+      reply.unauthorized('Missing or invalid authentication (Bearer token required)')
     }
   })
 }
