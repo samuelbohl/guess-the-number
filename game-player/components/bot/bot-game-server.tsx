@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, Play, Pause, RotateCcw, Trophy, Zap } from "lucide-react";
+import { Target, Play, Pause, RotateCcw, Trophy, Zap, TrendingUp, TrendingDown } from "lucide-react";
 import { startAndPlayBotGameAction, type BotAlgorithmKey } from "@/lib/actions/bot";
 import type { FeedbackType, Range } from "@/lib/types/game";
 
@@ -33,20 +33,13 @@ const ALGORITHM_OPTIONS: { value: BotAlgorithmKey; label: string; description: s
 
 type GameState = "idle" | "playing" | "paused" | "won" | "aborted";
 
-type ServerRecord = { guess: number; result: "low" | "high" | "correct" };
-
 export default function BotGameServer() {
   const [gameState, setGameState] = useState<GameState>("idle");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<BotAlgorithmKey | null>(null);
-  const [gameId, setGameId] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [history, setHistory] = useState<{ guess: number; feedback: FeedbackType }[]>([]);
   const [range, setRange] = useState<Range>({ min: 1, max: 10000 });
   const [currentFeedback, setCurrentFeedback] = useState<FeedbackType | null>(null);
-  const [serverHistory, setServerHistory] = useState<ServerRecord[]>([]);
-
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const stepIndexRef = useRef<number>(0);
 
   const selectedOption = useMemo(
     () => ALGORITHM_OPTIONS.find((o) => o.value === selectedAlgorithm) || null,
@@ -57,22 +50,44 @@ export default function BotGameServer() {
   const startNewGame = async () => {
     if (!selectedAlgorithm) return;
 
-    // Reset state
     setGameState("playing");
     setAttempts(0);
     setHistory([]);
     setRange({ min: 1, max: 10000 });
     setCurrentFeedback(null);
-    setServerHistory([]);
-    stepIndexRef.current = 0;
 
-    // Call server to create host game and play using selected strategy
+    // create host game and play using selected strategy
     const res = await startAndPlayBotGameAction(selectedAlgorithm);
-    setGameId(res.hostGameId);
-    setServerHistory(res.history);
+    setAttempts(res.attempts);
 
-    // Kick off animation in effect
-    setGameState(res.status === "aborted" ? "aborted" : "playing");
+    const immediateHistory = res.history.map((rec) => ({
+      guess: rec.guess,
+      feedback: rec.result as FeedbackType,
+    }));
+    setHistory(immediateHistory);
+
+    let newRange: Range = { min: 1, max: 10000 };
+    for (const rec of res.history) {
+      if (rec.result === "low") {
+        newRange = { ...newRange, min: Math.max(newRange.min, rec.guess + 1) };
+      } else if (rec.result === "high") {
+        newRange = { ...newRange, max: Math.min(newRange.max, rec.guess - 1) };
+      } else if (rec.result === "correct") {
+        newRange = { min: rec.guess, max: rec.guess };
+      }
+    }
+    setRange(newRange);
+
+    const last = res.history[res.history.length - 1];
+    setCurrentFeedback(last ? (last.result as FeedbackType) : null);
+
+    setGameState(
+      res.status === "aborted"
+        ? "aborted"
+        : last && last.result === "correct"
+        ? "won"
+        : "playing"
+    );
   };
 
   const togglePause = () => {
@@ -86,62 +101,11 @@ export default function BotGameServer() {
   const resetToSelection = () => {
     setGameState("idle");
     setSelectedAlgorithm(null);
-    setGameId(null);
     setAttempts(0);
     setHistory([]);
     setRange({ min: 1, max: 10000 });
     setCurrentFeedback(null);
-    setServerHistory([]);
-    stepIndexRef.current = 0;
   };
-
-  // Animate server-supplied history step-by-step
-  useEffect(() => {
-    if (gameState === "playing" && serverHistory.length > 0) {
-      // Stop any existing interval
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      intervalRef.current = setInterval(() => {
-        const idx = stepIndexRef.current;
-        if (idx >= serverHistory.length) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          return;
-        }
-        const rec = serverHistory[idx];
-        const feedback: FeedbackType = rec.result;
-
-        setAttempts((prev) => prev + 1);
-        setHistory((prev) => [...prev, { guess: rec.guess, feedback }]);
-        setCurrentFeedback(feedback);
-        setRange((prev) => {
-          if (feedback === "low") {
-            return { ...prev, min: Math.max(prev.min, rec.guess + 1) };
-          } else if (feedback === "high") {
-            return { ...prev, max: Math.min(prev.max, rec.guess - 1) };
-          }
-          return prev;
-        });
-
-        stepIndexRef.current = idx + 1;
-
-        if (feedback === "correct") {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          setGameState("won");
-        }
-      }, 800);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [gameState, serverHistory]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16">
@@ -249,9 +213,23 @@ export default function BotGameServer() {
 
                     {/* Current feedback */}
                     <div className="flex items-center justify-center gap-4 py-4">
-                      <Badge variant="secondary" className="text-sm">
-                        {currentFeedback ? currentFeedback.toUpperCase() : "WAITING"}
-                      </Badge>
+                      {currentFeedback === "low" && (
+                        <div className="flex flex-col items-center gap-2">
+                          <TrendingUp className="h-12 w-12 text-accent" />
+                          <p className="text-xl font-semibold text-accent">Go Higher!</p>
+                          <p className="text-sm text-muted-foreground">The number is larger than the guess</p>
+                        </div>
+                      )}
+                      {currentFeedback === "high" && (
+                        <div className="flex flex-col items-center gap-2">
+                          <TrendingDown className="h-12 w-12 text-destructive" />
+                          <p className="text-xl font-semibold text-destructive">Go Lower!</p>
+                          <p className="text-sm text-muted-foreground">The number is smaller than the guess</p>
+                        </div>
+                      )}
+                      {!currentFeedback && (
+                        <Badge variant="secondary" className="text-sm">WAITING</Badge>
+                      )}
                     </div>
 
                     {/* Range progress bar */}
@@ -330,7 +308,11 @@ export default function BotGameServer() {
                       .reverse()
                       .map((item, index) => (
                         <div key={index} className="flex items-center justify-between rounded border p-2">
-                          <span className="text-sm">Guess: {item.guess}</span>
+                          <span className="flex items-center gap-2 text-sm">
+                            {item.feedback === "low" && <TrendingUp className="h-4 w-4 text-accent" />}
+                            {item.feedback === "high" && <TrendingDown className="h-4 w-4 text-destructive" />}
+                            Guess: {item.guess}
+                          </span>
                           <Badge variant="secondary" className="text-xs">
                             {item.feedback}
                           </Badge>
