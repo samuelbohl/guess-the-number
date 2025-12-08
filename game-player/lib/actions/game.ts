@@ -7,24 +7,29 @@ import type { GameHostSubmitGuessResponse } from "@/lib/types/game-host";
 import { getDb } from "@/lib/db/client";
 import { playerGames, playerGuesses } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { AuthenticationError, DatabaseError, logError, AppError } from "@/lib/errors";
 
 export async function startNewGameAction() {
   const headerList = await headers();
   const token = headerList.get("x-ms-token-aad-id-token");
   if (!token) {
-    throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    const error = new AuthenticationError("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    logError(error, { action: 'startNewGameAction', reason: 'missing_token' });
+    throw error;
   }
 
   const principalId = headerList.get("x-ms-client-principal-id") || "unknown";
   if (!principalId) {
-    throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
+    const error = new AuthenticationError("Missing principal ID in 'x-ms-client-principal-id' header.");
+    logError(error, { action: 'startNewGameAction', reason: 'missing_principal' });
+    throw error;
   }
 
   const client = new GameHostClient(token);
   const created = await client.createGame();
 
   const db = getDb();
-  await db.insert(playerGames).values({
+  const insertResult = await db.insert(playerGames).values({
     playerId: principalId,
     mode: "manual",
     hostGameId: created.id,
@@ -36,6 +41,12 @@ export async function startNewGameAction() {
     startedAt: new Date(created.startedAt),
   });
 
+  if (!insertResult) {
+    const error = new DatabaseError('Failed to create game record');
+    logError(error, { action: 'startNewGameAction', gameId: created.id, principalId });
+    throw error;
+  }
+
   redirect(`/manual/${created.id}`);
 }
 
@@ -46,12 +57,16 @@ export async function submitGuessAction(
   const headerList = await headers();
   const token = headerList.get("x-ms-token-aad-id-token");
   if (!token) {
-    throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    const error = new AuthenticationError("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    logError(error, { action: 'submitGuessAction', gameId, reason: 'missing_token' });
+    throw error;
   }
 
   const principalId = headerList.get("x-ms-client-principal-id") || "unknown";
   if (!principalId) {
-    throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
+    const error = new AuthenticationError("Missing principal ID in 'x-ms-client-principal-id' header.");
+    logError(error, { action: 'submitGuessAction', gameId, reason: 'missing_principal' });
+    throw error;
   }
 
   const client = new GameHostClient(token);
@@ -66,10 +81,17 @@ export async function submitGuessAction(
 
   const playerGameId = rows[0]?.id;
   if (!playerGameId) {
-    throw new Error("Player game not found.");
+    const error = new DatabaseError('Player game not found');
+    logError(error, { action: 'submitGuessAction', gameId, principalId, reason: 'game_not_found' });
+    throw error;
   }
 
-  await db.insert(playerGuesses).values({ gameId: playerGameId, value, feedback: res.result });
+  const guessResult = await db.insert(playerGuesses).values({ gameId: playerGameId, value, feedback: res.result });
+  if (!guessResult) {
+    const error = new DatabaseError('Failed to save guess');
+    logError(error, { action: 'submitGuessAction', gameId, principalId, value, reason: 'save_guess_failed' });
+    throw error;
+  }
 
   let rangeMin = rows[0]?.rangeMin ?? 1;
   let rangeMax = rows[0]?.rangeMax ?? 10000;
@@ -83,7 +105,7 @@ export async function submitGuessAction(
     rangeMax = value;
   }
 
-  await db
+  const updateResult = await db
     .update(playerGames)
     .set({
     attempts: res.attempts ?? undefined,
@@ -94,6 +116,12 @@ export async function submitGuessAction(
     rangeMax,
     })
     .where(eq(playerGames.id, playerGameId));
+  
+  if (!updateResult) {
+    const error = new DatabaseError('Failed to update game state');
+    logError(error, { action: 'submitGuessAction', gameId, principalId, reason: 'update_game_failed' });
+    throw error;
+  }
   
   return res;
 }

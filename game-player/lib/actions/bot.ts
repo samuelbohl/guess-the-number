@@ -7,6 +7,7 @@ import { playerGames, playerGuesses } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Strategies, GuessBot } from "@/lib/bot";
 import type { GuessRecord } from "@/lib/bot/GuessStrategy";
+import { AuthenticationError, DatabaseError, logError } from "@/lib/errors";
 
 export type BotAlgorithmKey = keyof typeof Strategies;
 
@@ -23,12 +24,16 @@ export async function startAndPlayBotGameAction(
   const headerList = await headers();
   const token = headerList.get("x-ms-token-aad-id-token");
   if (!token) {
-    throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    const error = new AuthenticationError("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+    logError(error, { action: 'startAndPlayBotGameAction', algorithm, reason: 'missing_token' });
+    throw error;
   }
 
   const principalId = headerList.get("x-ms-client-principal-id");
   if (!principalId) {
-    throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
+    const error = new AuthenticationError("Missing principal ID in 'x-ms-client-principal-id' header.");
+    logError(error, { action: 'startAndPlayBotGameAction', algorithm, reason: 'missing_principal' });
+    throw error;
   }
 
   const client = new GameHostClient(token);
@@ -52,7 +57,9 @@ export async function startAndPlayBotGameAction(
 
   const playerGameId = inserted[0]?.id;
   if (!playerGameId) {
-    throw new Error("Failed to create player game.");
+    const error = new DatabaseError('Failed to create player game record');
+    logError(error, { action: 'startAndPlayBotGameAction', algorithm, reason: 'create_game_failed' });
+    throw error;
   }
 
   let rangeMin = 1;
@@ -61,11 +68,17 @@ export async function startAndPlayBotGameAction(
   const playResult = await bot.play(created.id);
 
   for (const rec of playResult.history) {
-    await db.insert(playerGuesses).values({
+    const guessResult = await db.insert(playerGuesses).values({
       gameId: playerGameId,
       value: rec.guess,
       feedback: rec.result,
     });
+    
+    if (!guessResult) {
+      const error = new DatabaseError('Failed to save bot guess');
+      logError(error, { action: 'startAndPlayBotGameAction', algorithm, gameId: created.id, guess: rec.guess, reason: 'save_guess_failed' });
+      throw error;
+    }
 
     if (rec.result === "low") {
       rangeMin = Math.max(rangeMin, rec.guess + 1);
@@ -78,7 +91,7 @@ export async function startAndPlayBotGameAction(
   }
 
   const hostGame = await client.getGame(created.id);
-  await db
+  const updateResult = await db
     .update(playerGames)
     .set({
       attempts: hostGame.attempts ?? playResult.attempts,
@@ -89,6 +102,12 @@ export async function startAndPlayBotGameAction(
       rangeMax,
     })
     .where(eq(playerGames.id, playerGameId));
+    
+  if (!updateResult) {
+    const error = new DatabaseError('Failed to update game state');
+    logError(error, { action: 'startAndPlayBotGameAction', algorithm, gameId: created.id, reason: 'update_game_failed' });
+    throw error;
+  }
 
   return {
     hostGameId: created.id,

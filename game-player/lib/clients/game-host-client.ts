@@ -7,6 +7,7 @@ import {
   type GameHostGetGameResponse,
   type GameHostSubmitGuessResponse,
 } from "@/lib/types/game-host";
+import { gameHostConfig } from "@/lib/config";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -15,17 +16,10 @@ export class GameHostClient {
   private readonly http: AxiosInstance;
 
   constructor(bearerToken: string) {
-    if (!process.env.GAME_HOST) {
-      throw new Error(
-        "Missing GAME_HOST env var. Set the game host base URL."
-      );
-    }
-
     this.token = bearerToken;
-
     this.http = axios.create({
-      baseURL: process.env.GAME_HOST!,
-      timeout: 10_000,
+      baseURL: gameHostConfig.baseUrl,
+      timeout: gameHostConfig.timeout,
     });
   }
 
