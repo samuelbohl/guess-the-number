@@ -29,7 +29,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('requireAuth', async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.user) {
-      reply.unauthorized('Missing or invalid authentication (Bearer token required)')
+      reply.code(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Missing or invalid authentication (Bearer token required)' })
     }
   })
 }
