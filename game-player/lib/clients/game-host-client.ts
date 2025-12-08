@@ -6,7 +6,7 @@ import {
   type GameHostCreateGameResponse,
   type GameHostGetGameResponse,
   type GameHostSubmitGuessResponse,
-} from "@/types/game-host";
+} from "@/lib/types/game-host";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

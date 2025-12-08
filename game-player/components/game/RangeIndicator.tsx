@@ -1,6 +1,6 @@
 "use client";
 
-import type { Range } from "@/types/game";
+import type { Range } from "@/lib/types/game";
 
 type Props = {
   range: Range;

@@ -2,8 +2,8 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import type { GameState, FeedbackType, Range, GuessHistoryItem } from "@/types/game";
-import { startNewGame as startGameService } from "@/lib/gameService";
+import type { GameState, FeedbackType, Range, GuessHistoryItem } from "@/lib/types/game";
+import { startNewGameAction, submitGuessAction } from "@/lib/actions/game";
 
 export function useGuessGame(initialGameId?: string) {
   const [gameState, setGameState] = useState<GameState>("idle");
@@ -13,7 +13,6 @@ export function useGuessGame(initialGameId?: string) {
   const [feedback, setFeedback] = useState<FeedbackType>("none");
   const [history, setHistory] = useState<GuessHistoryItem[]>([]);
   const [range, setRange] = useState<Range>({ min: 1, max: 10000 });
-  const [targetNumber, setTargetNumber] = useState<number | null>(null);
 
   useEffect(() => {
     if (initialGameId && gameState === "idle") {
@@ -24,21 +23,11 @@ export function useGuessGame(initialGameId?: string) {
       setFeedback("none");
       setRange({ min: 1, max: 10000 });
       setGuess("");
-      setTargetNumber(7342);
     }
-  }, [initialGameId]);
+  }, [initialGameId, gameState]);
 
   const startNewGame = async () => {
-    const { gameId: id, range: initialRange } = await startGameService();
-    setGameId(id);
-    setGameState("playing");
-    setAttempts(0);
-    setHistory([]);
-    setFeedback("none");
-    setRange(initialRange);
-    setGuess("");
-    // Temporary: simulate target until server integration
-    setTargetNumber(7342);
+    await startNewGameAction();
   };
 
   const submitGuess = async () => {
@@ -47,22 +36,22 @@ export function useGuessGame(initialGameId?: string) {
     const guessNumber = Number.parseInt(guess, 10);
     if (Number.isNaN(guessNumber) || guessNumber < 1 || guessNumber > 10000) return;
 
-    const target = targetNumber ?? 7342;
-    let newFeedback: FeedbackType = "none";
+    const res = await submitGuessAction(gameId, guessNumber);
 
-    if (guessNumber === target) {
+    let newFeedback: FeedbackType = "none";
+    if (res.result === "correct") {
       newFeedback = "correct";
       setGameState("won");
-    } else if (guessNumber < target) {
+    } else if (res.result === "low") {
       newFeedback = "higher";
       setRange((prev) => ({ ...prev, min: Math.max(prev.min, guessNumber + 1) }));
-    } else {
+    } else if (res.result === "high") {
       newFeedback = "lower";
       setRange((prev) => ({ ...prev, max: Math.min(prev.max, guessNumber - 1) }));
     }
 
     setFeedback(newFeedback);
-    setAttempts((prev) => prev + 1);
+    setAttempts(res.attempts);
     setHistory((prev) => [...prev, { guess: guessNumber, feedback: newFeedback }]);
     setGuess("");
   };

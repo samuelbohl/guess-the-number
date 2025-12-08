@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Trophy } from "lucide-react";
-import type { GuessHistoryItem } from "@/types/game";
+import type { GuessHistoryItem } from "@/lib/types/game";
 
 type Props = {
   history: GuessHistoryItem[];

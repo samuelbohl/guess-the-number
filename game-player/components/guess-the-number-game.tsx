@@ -12,7 +12,7 @@ import { FeedbackPanel } from "@/components/game/FeedbackPanel"
 import { RangeIndicator } from "@/components/game/RangeIndicator"
 import { GuessHistory } from "@/components/game/GuessHistory"
 import { GameWon } from "@/components/game/GameWon"
-import { startNewGameAction } from "@/app/actions"
+import { startNewGameAction } from "@/lib/actions/game"
 
 type Props = {
   initialGameId?: string
@@ -101,40 +101,6 @@ export default function GuessTheNumberGame({ initialGameId }: Props) {
           {/* History Sidebar */}
           <GuessHistory history={history} />
         </div>
-
-        {/* Info Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>How to Play</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  1
-                </div>
-                <h4 className="font-semibold">Start Game</h4>
-                <p className="text-sm text-muted-foreground">Click "Start New Game" to receive your unique game ID</p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  2
-                </div>
-                <h4 className="font-semibold">Make Guesses</h4>
-                <p className="text-sm text-muted-foreground">
-                  Enter numbers and get feedback if you're too high or low
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  3
-                </div>
-                <h4 className="font-semibold">Win</h4>
-                <p className="text-sm text-muted-foreground">Guess the correct number in as few attempts as possible</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

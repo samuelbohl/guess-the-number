@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { GameHostClient } from "@/clients/game-host-client";
+import { GameHostClient } from "@/lib/clients/game-host-client";
 import GuessTheNumberGame from "@/components/guess-the-number-game";
 
 export const dynamic = "force-dynamic";

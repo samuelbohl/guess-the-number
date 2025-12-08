@@ -1,7 +1,7 @@
 "use client";
 
 import { TrendingUp, TrendingDown } from "lucide-react";
-import type { FeedbackType } from "@/types/game";
+import type { FeedbackType } from "@/lib/types/game";
 
 type Props = {
   feedback: FeedbackType;
