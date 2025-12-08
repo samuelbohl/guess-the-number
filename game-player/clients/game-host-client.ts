@@ -42,6 +42,7 @@ export class GameHostClient {
       headers: {
         ...(config?.headers ?? {}),
         Authorization: `Bearer ${this.token}`,
+        Accept: "application/json",
         ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
       },
       ...config,
