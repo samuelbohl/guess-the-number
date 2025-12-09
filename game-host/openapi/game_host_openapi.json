@@ -34,6 +34,31 @@
         }
       }
     },
+    "/cron/cleanup": {
+      "get": {
+        "description": "Cleanup completed games",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deletedCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "deletedCount"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/db/migrations": {
       "get": {
         "responses": {
