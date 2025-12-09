@@ -43,13 +43,6 @@ export function isDevelopment(): boolean {
 }
 
 /**
- * Helper function to check if running in test mode
- */
-export function isTest(): boolean {
-  return config.NODE_ENV === 'test';
-}
-
-/**
  * Helper function to check if running in production mode
  */
 export function isProduction(): boolean {

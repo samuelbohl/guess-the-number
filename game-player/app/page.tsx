@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, User, Bot } from 'lucide-react';
+import { Target, User, Bot, History } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { isActiveToken } from '@/lib/utils';
 import { headers } from 'next/headers';
@@ -24,7 +24,9 @@ export default async function Home() {
           {/* Header */}
           <div className="mb-12 text-center">
             <div className="mb-4 flex items-center justify-center gap-2">
-              <Target className="h-10 w-10 text-primary md:h-12 md:w-12" />
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                <Target className="h-10 w-10 text-primary md:h-12 md:w-12 cursor-pointer" />
+              </Link>
               <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl">
                 Guess the Number
               </h1>
@@ -69,6 +71,16 @@ export default async function Home() {
                 </Link>
               </CardContent>
             </Card>
+          </div>
+          
+          {/* View Old Games Button */}
+          <div className="mt-8 text-center">
+            <Link href="/games">
+              <Button variant="outline" size="lg" className="gap-2">
+                <History className="h-5 w-5" />
+                View Old Games
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

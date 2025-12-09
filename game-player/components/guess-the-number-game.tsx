@@ -2,11 +2,12 @@
 
 import type React from 'react';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target } from 'lucide-react';
-import { useGuessGame } from '@/lib/use-guess-game';
+import { useGuessGame } from '@/lib/hooks/use-guess-game';
 import { GuessControls } from '@/components/game/guess-controls';
 import { FeedbackPanel } from '@/components/game/feedback-panel';
 import { RangeIndicator } from '@/components/game/range-indicator';
@@ -55,7 +56,9 @@ export default function GuessTheNumberGame({
         {/* Header */}
         <div className="mb-8 text-center md:mb-12">
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Target className="h-8 w-8 text-primary md:h-10 md:w-10" />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Target className="h-8 w-8 text-primary md:h-10 md:w-10 cursor-pointer" />
+            </Link>
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl">
               Guess the Number
             </h1>

@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target, Play, Pause, RotateCcw, Trophy, Zap } from 'lucide-react';
 import type { FeedbackType, Range } from '@/lib/types/game';
 import type { BotAlgorithmKey } from '@/lib/actions/bot';
-import { useBotGame } from '@/lib/use-bot-game';
+import { useBotGame } from '@/lib/hooks/use-bot-game';
 import { AlgorithmSelection, DEFAULT_ALGORITHM_OPTIONS } from '@/components/bot/algorithm-selection';
 import { BotGuessHistory } from '@/components/bot/bot-guess-history';
 
@@ -36,7 +37,6 @@ export default function BotGameServer({
     history,
     range,
     startNewGame,
-    togglePause,
     resetToSelection,
   } = useBotGame({
     initialGameId,
@@ -58,7 +58,9 @@ export default function BotGameServer({
         {/* Header */}
         <div className="mb-8 text-center md:mb-12">
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Target className="h-8 w-8 text-accent md:h-10 md:w-10" />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Target className="h-8 w-8 text-accent md:h-10 md:w-10 cursor-pointer" />
+            </Link>
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl">Bot Mode</h1>
           </div>
           <p className="text-pretty text-base text-muted-foreground md:text-lg">
@@ -118,41 +120,18 @@ export default function BotGameServer({
                   </div>
                 )}
 
-                {(gameState === 'playing' || gameState === 'paused') && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Button onClick={togglePause} variant="outline" size="sm" className="gap-2">
-                          {gameState === 'playing' ? (
-                            <>
-                              <Pause className="h-4 w-4" />
-                              Pause
-                            </>
-                          ) : (
-                            <>
-                              <Play className="h-4 w-4" />
-                              Resume
-                            </>
-                          )}
-                        </Button>
+                {gameState === "playing" && (
+                  <div className="flex flex-col items-center justify-center space-y-6 py-16">
+                    <div className="relative">
+                      <div className="h-24 w-24 animate-spin rounded-full border-4 border-muted border-t-accent" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Target className="h-10 w-10 text-accent" />
                       </div>
-                      <div className="text-sm text-muted-foreground">Attempts: {attempts}</div>
                     </div>
-
-                    {/* Range visualization */}
-                    <div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Range: {range.min}</span>
-                        <span>{range.max}</span>
-                      </div>
-                      <div className="relative h-2 w-full rounded bg-muted">
-                        <div
-                          className="h-full bg-accent transition-all"
-                          style={{ width: `${((range.max - range.min) / 10000) * 100}%` }}
-                        />
-                      </div>
-                      <p className="mt-2 text-center text-xs text-muted-foreground">
-                        Remaining possibilities: {range.max - range.min + 1}
+                    <div className="text-center">
+                      <p className="text-xl font-semibold">Bot is playing...</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {selectedOption?.title} is searching for the number
                       </p>
                     </div>
                   </div>
@@ -182,23 +161,6 @@ export default function BotGameServer({
                       </Button>
                       <Button onClick={resetToSelection} variant="outline" size="lg">
                         <RotateCcw className="h-4 w-4" />
-                        Change Algorithm
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {gameState === 'aborted' && (
-                  <div className="flex flex-col items-center justify-center space-y-6 py-8">
-                    <div className="rounded-full bg-destructive/10 p-6">
-                      <Trophy className="h-16 w-16 text-destructive" />
-                    </div>
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-destructive">Bot Aborted</h3>
-                      <p className="mt-2 text-muted-foreground">Range collapsed or max attempts reached.</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={resetToSelection} variant="outline" size="lg">
                         Change Algorithm
                       </Button>
                     </div>
