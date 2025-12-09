@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 export const dynamic = 'force-dynamic';
-import TokenActions from './TokenActions';
+import TokenActions from './token-actions';
 
 export default async function AuthDebugPage() {
   // 1. Get the headers object

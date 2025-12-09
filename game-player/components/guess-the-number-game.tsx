@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target } from 'lucide-react';
-import { useGuessGame } from '@/lib/use-guess-game';
+import { useGuessGame } from '@/lib/hooks/use-guess-game';
 import { GuessControls } from '@/components/game/guess-controls';
 import { FeedbackPanel } from '@/components/game/feedback-panel';
 import { RangeIndicator } from '@/components/game/range-indicator';

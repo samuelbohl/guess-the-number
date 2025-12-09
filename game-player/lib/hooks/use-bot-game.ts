@@ -57,14 +57,6 @@ export function useBotGame(initial?: BotInitialState) {
     router.push(`/bot/${res.hostGameId}`);
   };
 
-  const togglePause = () => {
-    if (gameState === 'playing') {
-      setGameState('paused');
-    } else if (gameState === 'paused') {
-      setGameState('playing');
-    }
-  };
-
   const resetToSelection = () => {
     router.push('/bot');
   };
@@ -77,7 +69,6 @@ export function useBotGame(initial?: BotInitialState) {
     history,
     range,
     startNewGame,
-    togglePause,
     resetToSelection,
   };
 }
