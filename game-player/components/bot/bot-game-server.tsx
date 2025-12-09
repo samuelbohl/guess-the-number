@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +58,9 @@ export default function BotGameServer({
         {/* Header */}
         <div className="mb-8 text-center md:mb-12">
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Target className="h-8 w-8 text-accent md:h-10 md:w-10" />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Target className="h-8 w-8 text-accent md:h-10 md:w-10 cursor-pointer" />
+            </Link>
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl">Bot Mode</h1>
           </div>
           <p className="text-pretty text-base text-muted-foreground md:text-lg">

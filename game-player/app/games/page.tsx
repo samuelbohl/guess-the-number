@@ -4,6 +4,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Target } from 'lucide-react';
 import { getDb } from '@/lib/db/client';
 import { playerGames } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils';
@@ -40,6 +41,21 @@ export default async function GamesPage() {
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="mx-auto max-w-5xl">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                <Target className="h-10 w-10 text-primary md:h-12 md:w-12 cursor-pointer" />
+              </Link>
+              <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl">
+                Saved Games
+              </h1>
+            </div>
+            <p className="text-pretty text-base text-muted-foreground md:text-xl">
+              Review your previous game history
+            </p>
+          </div>
+          
           <Card className="transition-all hover:shadow-lg">
             <CardHeader className="border-b">
               <CardTitle className="text-2xl">Saved Games</CardTitle>
