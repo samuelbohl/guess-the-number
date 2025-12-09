@@ -7,13 +7,24 @@ import { Button } from '@/components/ui/button';
 import { getDb } from '@/lib/db/client';
 import { playerGames } from '@/lib/db/schema';
 import { formatDate } from '@/lib/utils';
+import { redirect } from 'next/navigation';
+import { isActiveToken } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function GamesPage() {
   const headerList = await headers();
-  const principalId = headerList.get('x-ms-client-principal-id');
 
+  const token = headerList.get('x-ms-token-aad-id-token');
+  if (!token) {
+    throw new Error("Missing AAD ID token in 'x-ms-token-aad-id-token' header.");
+  }
+  if (!isActiveToken(token)) {
+    const loginUrl = `/.auth/login/aad?post_login_redirect_uri=${encodeURIComponent(`/manual`)}`;
+    redirect(loginUrl);
+  }
+  
+  const principalId = headerList.get('x-ms-client-principal-id');
   if (!principalId) {
     throw new Error("Missing principal ID in 'x-ms-client-principal-id' header.");
   }
