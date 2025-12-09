@@ -3,11 +3,6 @@ import { sql } from 'drizzle-orm';
 
 const health: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', async function (_request, _reply) {
-    return { status: 'ok', uptime: process.uptime() };
-  });
-
-  // Liveness: process is up
-  fastify.get('/live', async function () {
     return { status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() };
   });
 
